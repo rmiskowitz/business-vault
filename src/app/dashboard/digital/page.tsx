@@ -65,7 +65,7 @@ export default function DigitalAssetsPage() {
   const handleEdit = (asset: DigitalAsset) => {
     setFormData({
       name: asset.name,
-      type: asset.type,
+      type: asset.type as any,
       url: asset.url || '',
       registrar: asset.registrar || '',
       credential_location: asset.credential_location,
