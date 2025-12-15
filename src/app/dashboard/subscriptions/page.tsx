@@ -68,7 +68,7 @@ export default function SubscriptionsPage() {
       name: sub.name,
       provider: sub.provider,
       cost: sub.cost.toString(),
-      billing_cycle: sub.billing_cycle,
+      billing_cycle: sub.billing_cycle as any,
       next_billing: sub.next_billing || '',
       credential_location: sub.credential_location,
       cancellation_terms: sub.cancellation_terms || '',
