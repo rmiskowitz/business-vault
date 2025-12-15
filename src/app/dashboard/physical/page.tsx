@@ -46,9 +46,15 @@ export default function PhysicalAssetsPage() {
     if (!user) return
 
     const payload = {
-      ...formData,
-      user_id: user.id,
+      name: formData.name,
+      category: formData.category,
+      location: formData.location,
+      serial_number: formData.serial_number || null,
+      purchase_date: formData.purchase_date || null,
       purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+      warranty_expires: formData.warranty_expires || null,
+      notes: formData.notes || null,
+      user_id: user.id,
     }
 
     if (editingId) {
