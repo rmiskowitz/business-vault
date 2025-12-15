@@ -68,7 +68,7 @@ export default function ContactsPage() {
       role: contact.role,
       email: contact.email || '',
       phone: contact.phone || '',
-      category: contact.category,
+      category: contact.category as any,
       notes: contact.notes || '',
     })
     setEditingId(contact.id)
