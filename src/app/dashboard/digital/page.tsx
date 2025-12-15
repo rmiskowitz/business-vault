@@ -2,21 +2,20 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { DigitalAsset } from '@/lib/types'
 
 export default function DigitalAssetsPage() {
-  const [assets, setAssets] = useState<DigitalAsset[]>([])
+  const [assets, setAssets] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
-    type: 'domain' as const,
+    asset_type: 'domain',
     url: '',
-    registrar: '',
+    provider: '',
     credential_location: '',
-    expires: '',
-    auto_renew: false,
+    expiration_date: '',
+    auto_renews: false,
     notes: '',
   })
 
@@ -45,17 +44,18 @@ export default function DigitalAssetsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-const payload = {
+    const payload = {
       name: formData.name,
-      type: formData.type,
+      asset_type: formData.asset_type,
       url: formData.url || null,
-      registrar: formData.registrar || null,
+      provider: formData.provider || null,
       credential_location: formData.credential_location,
-      expires: formData.expires || null,
-      auto_renew: formData.auto_renew,
+      expiration_date: formData.expiration_date || null,
+      auto_renews: formData.auto_renews,
       notes: formData.notes || null,
       user_id: user.id,
     }
+
     if (editingId) {
       await supabase.from('digital_assets').update(payload).eq('id', editingId)
     } else {
@@ -64,19 +64,19 @@ const payload = {
 
     setShowForm(false)
     setEditingId(null)
-    setFormData({ name: '', type: 'domain', url: '', registrar: '', credential_location: '', expires: '', auto_renew: false, notes: '' })
+    setFormData({ name: '', asset_type: 'domain', url: '', provider: '', credential_location: '', expiration_date: '', auto_renews: false, notes: '' })
     fetchAssets()
   }
 
-  const handleEdit = (asset: DigitalAsset) => {
+  const handleEdit = (asset: any) => {
     setFormData({
       name: asset.name,
-      type: asset.type as any,
+      asset_type: asset.asset_type || 'domain',
       url: asset.url || '',
-      registrar: asset.registrar || '',
-      credential_location: asset.credential_location,
-      expires: asset.expires || '',
-      auto_renew: asset.auto_renew,
+      provider: asset.provider || '',
+      credential_location: asset.credential_location || '',
+      expiration_date: asset.expiration_date || '',
+      auto_renews: asset.auto_renews || false,
       notes: asset.notes || '',
     })
     setEditingId(asset.id)
@@ -120,7 +120,7 @@ const payload = {
             </div>
             <div>
               <label className="label">Type *</label>
-              <select className="input" value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}>
+              <select className="input" value={formData.asset_type} onChange={(e) => setFormData({ ...formData, asset_type: e.target.value })}>
                 <option value="domain">Domain</option>
                 <option value="hosting">Hosting</option>
                 <option value="social_media">Social Media</option>
@@ -130,23 +130,23 @@ const payload = {
             </div>
             <div>
               <label className="label">URL</label>
-              <input className="input" type="url" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} />
+              <input className="input" value={formData.url} onChange={(e) => setFormData({ ...formData, url: e.target.value })} />
             </div>
             <div>
-              <label className="label">Registrar/Provider</label>
-              <input className="input" placeholder="e.g., GoDaddy, AWS, Google" value={formData.registrar} onChange={(e) => setFormData({ ...formData, registrar: e.target.value })} />
+              <label className="label">Provider</label>
+              <input className="input" placeholder="e.g., GoDaddy, AWS, Google" value={formData.provider} onChange={(e) => setFormData({ ...formData, provider: e.target.value })} />
             </div>
             <div>
               <label className="label">Credential Location *</label>
               <input className="input" required placeholder="Where are login credentials stored?" value={formData.credential_location} onChange={(e) => setFormData({ ...formData, credential_location: e.target.value })} />
             </div>
             <div>
-              <label className="label">Expires</label>
-              <input className="input" type="date" value={formData.expires} onChange={(e) => setFormData({ ...formData, expires: e.target.value })} />
+              <label className="label">Expiration Date</label>
+              <input className="input" type="date" value={formData.expiration_date} onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })} />
             </div>
             <div className="flex items-center space-x-2">
-              <input type="checkbox" id="auto_renew" checked={formData.auto_renew} onChange={(e) => setFormData({ ...formData, auto_renew: e.target.checked })} />
-              <label htmlFor="auto_renew" className="text-sm text-gray-700">Auto-renew enabled</label>
+              <input type="checkbox" id="auto_renews" checked={formData.auto_renews} onChange={(e) => setFormData({ ...formData, auto_renews: e.target.checked })} />
+              <label htmlFor="auto_renews" className="text-sm text-gray-700">Auto-renew enabled</label>
             </div>
             <div className="md:col-span-2">
               <label className="label">Notes</label>
@@ -175,14 +175,14 @@ const payload = {
                 <div>
                   <div className="flex items-center space-x-2 mb-1">
                     <h3 className="font-semibold text-lg text-gray-900">{asset.name}</h3>
-                    <span className={`text-xs px-2 py-1 rounded-full ${typeColors[asset.type]}`}>
-                      {asset.type.replace('_', ' ')}
+                    <span className={`text-xs px-2 py-1 rounded-full ${typeColors[asset.asset_type] || typeColors.other}`}>
+                      {asset.asset_type?.replace('_', ' ') || 'other'}
                     </span>
                   </div>
                   {asset.url && <p className="text-blue-600 text-sm">{asset.url}</p>}
                   <p className="text-gray-600">Credentials: {asset.credential_location}</p>
-                  {asset.registrar && <p className="text-sm text-gray-500">Provider: {asset.registrar}</p>}
-                  {asset.expires && <p className="text-sm text-gray-500">Expires: {asset.expires} {asset.auto_renew && '(Auto-renew)'}</p>}
+                  {asset.provider && <p className="text-sm text-gray-500">Provider: {asset.provider}</p>}
+                  {asset.expiration_date && <p className="text-sm text-gray-500">Expires: {asset.expiration_date} {asset.auto_renews && '(Auto-renew)'}</p>}
                   {asset.notes && <p className="text-sm text-gray-500 mt-2">{asset.notes}</p>}
                 </div>
                 <div className="flex space-x-2">
