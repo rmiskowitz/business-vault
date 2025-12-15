@@ -45,11 +45,17 @@ export default function DigitalAssetsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    const payload = {
-      ...formData,
+const payload = {
+      name: formData.name,
+      type: formData.type,
+      url: formData.url || null,
+      registrar: formData.registrar || null,
+      credential_location: formData.credential_location,
+      expires: formData.expires || null,
+      auto_renew: formData.auto_renew,
+      notes: formData.notes || null,
       user_id: user.id,
     }
-
     if (editingId) {
       await supabase.from('digital_assets').update(payload).eq('id', editingId)
     } else {
