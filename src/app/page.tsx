@@ -79,10 +79,10 @@ export default function Home() {
   ]
 
   const scenarios = [
-    { img: '/scenario1-website-vanishes.svg', title: 'Your website vanishes.', desc: "The domain expired. The renewal notice went to an email you don't control. Now someone else owns it — and wants $10,000 to sell it back." },
-    { img: '/scenario2-vendor-ghosted.svg', title: 'Your vendor ghosted.', desc: "The freelancer who built your site is gone. You don't know where your domain is registered, what the hosting login is, or how to make a single change." },
-    { img: '/scenario3-employee-left.svg', title: 'An employee walked out.', desc: "Your Instagram login, Google Business Profile, and email admin credentials went with them. You're locked out of your own business." },
-    { img: '/scenario4-selling-unprepared.svg', title: "You're selling — unprepared.", desc: "Due diligence starts. The buyer wants a list of digital assets. You realize you can't prove what they're buying — and the deal stalls." },
+    { img: '/website', title: 'Your website vanishes.', desc: "The domain expired. The renewal notice went to an email you don't control. Now someone else owns it — and wants $10,000 to sell it back." },
+    { img: '/vendor', title: 'Your vendor ghosted.', desc: "The freelancer who built your site is gone. You don't know where your domain is registered, what the hosting login is, or how to make a single change." },
+    { img: '/employee', title: 'An employee walked out.', desc: "Your Instagram login, Google Business Profile, and email admin credentials went with them. You're locked out of your own business." },
+    { img: '/selling', title: "You're selling — unprepared.", desc: "Due diligence starts. The buyer wants a list of digital assets. You realize you can't prove what they're buying — and the deal stalls." },
   ]
 
   const features = [
@@ -544,7 +544,7 @@ export default function Home() {
 
             <p className="text-center mt-12 text-sm text-[#71717a]">
               Need a custom solution for your agency or enterprise?{' '}
-              <a href="mailto:businessvault@clickstartbiz.com" className="text-[#f59e0b] hover:underline">Let's talk</a>
+              <a href="mailto:partners@businessvault.com" className="text-[#f59e0b] hover:underline">Let's talk</a>
             </p>
           </div>
         </section>
