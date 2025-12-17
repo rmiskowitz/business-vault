@@ -544,7 +544,7 @@ export default function Home() {
 
             <p className="text-center mt-12 text-sm text-[#71717a]">
               Need a custom solution for your agency or enterprise?{' '}
-              <a href="mailto:partners@businessvault.com" className="text-[#f59e0b] hover:underline">Let's talk</a>
+              <a href="mailto:businessvault@clickstartbiz.com" className="text-[#f59e0b] hover:underline">Let's talk</a>
             </p>
           </div>
         </section>
