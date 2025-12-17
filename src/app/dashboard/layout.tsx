@@ -1,5 +1,4 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
@@ -46,22 +45,19 @@ export default function DashboardLayout({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-gray-500">Loading...</div>
+      <div className="min-h-screen flex items-center justify-center bg-[#09090b]">
+        <div className="text-[#a1a1aa]">Loading...</div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#09090b]">
       {/* Sidebar */}
-      <aside className="fixed left-0 top-0 h-full w-64 bg-white border-r border-gray-200 z-10">
+      <aside className="fixed left-0 top-0 h-full w-64 bg-[#0f0f12] border-r border-[#1e1e23] z-10">
         <div className="p-6">
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold">V</span>
-            </div>
-            <span className="font-bold text-xl text-gray-900">Business Vault</span>
+            <span className="font-serif font-semibold text-xl text-white">Business Vault</span>
           </Link>
         </div>
         
@@ -72,10 +68,10 @@ export default function DashboardLayout({
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+                className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all ${
                   isActive
-                    ? 'bg-blue-50 text-blue-600'
-                    : 'text-gray-600 hover:bg-gray-50'
+                    ? 'bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20'
+                    : 'text-[#a1a1aa] hover:bg-[#18181b] hover:text-white'
                 }`}
               >
                 <span>{item.icon}</span>
@@ -85,14 +81,14 @@ export default function DashboardLayout({
           })}
         </nav>
         
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-[#1e1e23]">
           <div className="flex items-center justify-between">
             <div className="truncate">
-              <p className="text-sm text-gray-500 truncate">{user?.email}</p>
+              <p className="text-sm text-[#71717a] truncate">{user?.email}</p>
             </div>
             <button
               onClick={handleSignOut}
-              className="text-gray-400 hover:text-gray-600 text-sm"
+              className="text-[#71717a] hover:text-[#f59e0b] text-sm transition-colors"
             >
               Sign out
             </button>
@@ -101,7 +97,7 @@ export default function DashboardLayout({
       </aside>
 
       {/* Main Content */}
-      <main className="ml-64 p-8">
+      <main className="ml-64 p-8 min-h-screen">
         {children}
       </main>
     </div>
