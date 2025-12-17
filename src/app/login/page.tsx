@@ -1,5 +1,4 @@
 'use client'
-
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -33,33 +32,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen flex items-center justify-center bg-[#09090b] py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Background gradient */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[150%] h-full bg-[radial-gradient(ellipse_at_center_top,rgba(245,158,11,0.08)_0%,transparent_60%)] pointer-events-none" />
+      
+      <div className="max-w-md w-full space-y-8 relative">
         <div className="text-center">
           <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">V</span>
-            </div>
-            <span className="font-bold text-2xl text-gray-900">Business Vault</span>
+            <span className="font-serif font-semibold text-2xl text-white">Business Vault</span>
           </Link>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-white">
             Welcome back
           </h2>
-          <p className="mt-2 text-gray-600">
+          <p className="mt-2 text-[#a1a1aa]">
             Sign in to access your business assets
           </p>
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
-            <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
+            <div className="bg-[rgba(239,68,68,0.15)] border border-[rgba(239,68,68,0.3)] text-[#ef4444] p-3 rounded-xl text-sm">
               {error}
             </div>
           )}
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="email" className="label">
+              <label htmlFor="email" className="block text-sm font-medium text-[#a1a1aa] mb-2">
                 Email address
               </label>
               <input
@@ -68,14 +67,15 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
-                className="input"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3.5 text-white placeholder-[#52525b] focus:outline-none focus:border-[#f59e0b] transition-colors"
+                placeholder="you@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
             
             <div>
-              <label htmlFor="password" className="label">
+              <label htmlFor="password" className="block text-sm font-medium text-[#a1a1aa] mb-2">
                 Password
               </label>
               <input
@@ -84,7 +84,8 @@ export default function LoginPage() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="input"
+                className="w-full bg-[#18181b] border border-[#27272a] rounded-xl px-4 py-3.5 text-white placeholder-[#52525b] focus:outline-none focus:border-[#f59e0b] transition-colors"
+                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
@@ -94,14 +95,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-primary py-3 text-lg disabled:opacity-50"
+            className="w-full py-4 rounded-full font-semibold bg-white text-[#09090b] hover:translate-y-[-2px] hover:shadow-[0_20px_40px_rgba(255,255,255,0.15)] transition-all disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
 
-          <p className="text-center text-gray-600">
+          <p className="text-center text-[#a1a1aa]">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-blue-600 hover:text-blue-700 font-medium">
+            <Link href="/signup" className="text-[#f59e0b] hover:underline font-medium">
               Sign up
             </Link>
           </p>
