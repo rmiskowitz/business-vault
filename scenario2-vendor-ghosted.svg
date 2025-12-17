@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="bgGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0f14"/>
+      <stop offset="100%" style="stop-color:#1a1a24"/>
+    </linearGradient>
+    <linearGradient id="lightBeam2" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f59e0b;stop-opacity:0.12"/>
+      <stop offset="100%" style="stop-color:#f59e0b;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="chairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#2a2a35"/>
+      <stop offset="100%" style="stop-color:#1a1a22"/>
+    </linearGradient>
+    <filter id="shadow2">
+      <feDropShadow dx="0" dy="8" stdDeviation="15" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="2"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bgGrad2)"/>
+  
+  <!-- Light beam from window (right side) -->
+  <polygon points="800,0 800,300 500,500 650,0" fill="url(#lightBeam2)"/>
+  
+  <!-- Floor -->
+  <rect x="0" y="400" width="800" height="100" fill="#0d0d12"/>
+  <line x1="0" y1="400" x2="800" y2="400" stroke="#1f1f28" stroke-width="1"/>
+  
+  <!-- Empty office chair -->
+  <g transform="translate(550, 280)">
+    <!-- Chair base/wheels -->
+    <ellipse cx="0" cy="120" rx="60" ry="15" fill="#151518"/>
+    <line x1="-40" y1="120" x2="-50" y2="135" stroke="#252528" stroke-width="8" stroke-linecap="round"/>
+    <line x1="40" y1="120" x2="50" y2="135" stroke="#252528" stroke-width="8" stroke-linecap="round"/>
+    <line x1="0" y1="120" x2="0" y2="135" stroke="#252528" stroke-width="8" stroke-linecap="round"/>
+    <!-- Wheels -->
+    <circle cx="-50" cy="140" r="8" fill="#1a1a1d"/>
+    <circle cx="50" cy="140" r="8" fill="#1a1a1d"/>
+    <circle cx="0" cy="140" r="8" fill="#1a1a1d"/>
+    <!-- Center pole -->
+    <rect x="-8" y="60" width="16" height="60" fill="#202025"/>
+    <!-- Seat -->
+    <ellipse cx="0" cy="60" rx="50" ry="15" fill="url(#chairGrad)"/>
+    <!-- Back -->
+    <path d="M-40 50 Q-45 -30 -30 -60 L30 -60 Q45 -30 40 50" fill="url(#chairGrad)"/>
+    <!-- Armrests -->
+    <rect x="-55" y="20" width="15" height="8" rx="2" fill="#252530"/>
+    <rect x="40" y="20" width="15" height="8" rx="2" fill="#252530"/>
+  </g>
+  
+  <!-- Desk -->
+  <rect x="100" y="300" width="400" height="20" rx="3" fill="#1e1e26" filter="url(#shadow2)"/>
+  <rect x="120" y="320" width="15" height="80" fill="#18181f"/>
+  <rect x="465" y="320" width="15" height="80" fill="#18181f"/>
+  
+  <!-- Laptop (closed/abandoned) -->
+  <g transform="translate(200, 270)">
+    <rect x="0" y="0" width="160" height="8" rx="2" fill="#252530"/>
+    <rect x="5" y="-100" width="150" height="100" rx="4" fill="#1a1a22" transform="rotate(-5)"/>
+    <rect x="10" y="-95" width="140" height="90" rx="2" fill="#0a0a0f" transform="rotate(-5)"/>
+    <!-- Screen showing question marks -->
+    <text x="60" y="-40" font-family="Arial" font-size="32" fill="#2a2a35" transform="rotate(-5)">???</text>
+  </g>
+  
+  <!-- Cold coffee cup -->
+  <g transform="translate(380, 265)">
+    <ellipse cx="0" cy="0" rx="18" ry="5" fill="#1a1a20"/>
+    <path d="M-18 0 L-15 35 L15 35 L18 0" fill="#252530"/>
+    <ellipse cx="0" cy="0" rx="14" ry="4" fill="#151518"/>
+    <ellipse cx="0" cy="2" rx="11" ry="3" fill="#1a1512"/>
+    <path d="M18 8 Q30 8 30 18 Q30 28 18 28" fill="none" stroke="#252530" stroke-width="4"/>
+  </g>
+  
+  <!-- Sticky note with password (faded) -->
+  <g transform="translate(320, 250) rotate(-8)">
+    <rect x="0" y="0" width="60" height="60" fill="#f59e0b" opacity="0.7"/>
+    <rect x="0" y="0" width="60" height="10" fill="#d97706" opacity="0.5"/>
+    <text x="8" y="28" font-family="Comic Sans MS, cursive" font-size="7" fill="#1a1a20" opacity="0.6">admin123</text>
+    <text x="8" y="40" font-family="Comic Sans MS, cursive" font-size="6" fill="#1a1a20" opacity="0.4">GoDaddy?</text>
+    <text x="8" y="50" font-family="Comic Sans MS, cursive" font-size="6" fill="#1a1a20" opacity="0.4">call mike??</text>
+  </g>
+  
+  <!-- Unanswered chat bubble floating -->
+  <g transform="translate(450, 200)" opacity="0.5">
+    <rect x="0" y="0" width="80" height="35" rx="8" fill="#1e1e28" stroke="#2a2a35" stroke-width="1"/>
+    <polygon points="15,35 25,35 20,45" fill="#1e1e28"/>
+    <text x="15" y="15" font-family="Arial" font-size="8" fill="#64748b">Hey, quick question</text>
+    <text x="15" y="26" font-family="Arial" font-size="8" fill="#64748b">about the site...</text>
+    <!-- Delivered but not read indicators -->
+    <text x="65" y="30" font-family="Arial" font-size="6" fill="#475569">2 wks</text>
+  </g>
+  
+  <!-- Second unanswered message -->
+  <g transform="translate(430, 160)" opacity="0.3">
+    <rect x="0" y="0" width="90" height="25" rx="6" fill="#1e1e28" stroke="#2a2a35" stroke-width="1"/>
+    <text x="10" y="16" font-family="Arial" font-size="8" fill="#64748b">Are you still there?</text>
+  </g>
+  
+  <!-- Dust particles in light beam -->
+  <circle cx="650" cy="150" r="1.5" fill="#f59e0b" opacity="0.3"/>
+  <circle cx="700" cy="200" r="1" fill="#f59e0b" opacity="0.2"/>
+  <circle cx="620" cy="250" r="1.5" fill="#f59e0b" opacity="0.25"/>
+  <circle cx="680" cy="100" r="1" fill="#f59e0b" opacity="0.2"/>
+  <circle cx="600" cy="180" r="1" fill="#f59e0b" opacity="0.15"/>
+  
+  <!-- Dramatic text -->
+  <text x="400" y="470" font-family="Georgia, serif" font-size="18" fill="#f59e0b" text-anchor="middle" opacity="0.6" font-style="italic">No answer.</text>
+</svg>
