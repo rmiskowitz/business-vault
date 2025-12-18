@@ -34,10 +34,10 @@ export default function Home() {
   ]
 
   const scenarios = [
-    { img: '/website', title: 'Your website vanishes.', desc: "The domain expired. The renewal went to an email you don't control. Now someone else owns it — and wants $10,000 to sell it back." },
-    { img: '/vendor', title: 'Your vendor ghosted.', desc: "The freelancer who built your site is gone. You don't know where anything is registered, what the logins are, or how to make changes." },
-    { img: '/employee', title: 'An employee walked out.', desc: "Your Instagram, Google Business, and email admin credentials went with them. You're locked out of your own business." },
-    { img: '/selling', title: "You're selling — unprepared.", desc: "Due diligence starts. The buyer wants a list of digital assets. You can't prove what they're buying — and the deal stalls." },
+    { img: '/website.jpg', title: 'Your website vanishes.', desc: "The domain expired. The renewal went to an email you don't control. Now someone else owns it — and wants $10,000 to sell it back." },
+    { img: '/vendor.jpg', title: 'Your vendor ghosted.', desc: "The freelancer who built your site is gone. You don't know where anything is registered, what the logins are, or how to make changes." },
+    { img: '/employee.jpg', title: 'An employee walked out.', desc: "Your Instagram, Google Business, and email admin credentials went with them. You're locked out of your own business." },
+    { img: '/selling.jpg', title: "You're selling — unprepared.", desc: "Due diligence starts. The buyer wants a list of digital assets. You can't prove what they're buying — and the deal stalls." },
   ]
 
   return (
@@ -158,26 +158,6 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Stakes Section */}
-        <section className="py-24 px-8 bg-[#0f0f0f] text-center relative overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[radial-gradient(circle,rgba(239,68,68,0.12)_0%,transparent_60%)] pointer-events-none opacity-50" />
-          <div className="max-w-[800px] mx-auto relative z-10">
-            <h2 className="font-serif text-[clamp(1.75rem,3.5vw,2.5rem)] font-normal leading-[1.35] mb-8">
-              Most businesses don&apos;t fail from bad ideas.<br />
-              They fail from <span className="text-[#f59e0b]">disorganization</span>, <span className="text-[#f59e0b]">missed details</span>,<br />
-              and <span className="text-[#f59e0b]">preventable risk</span>.
-            </h2>
-            <div className="flex justify-center gap-12 flex-wrap">
-              {['Expired domains', 'Lapsed insurance', 'Lost credentials', 'Disrupted operations'].map((problem, i) => (
-                <div key={i} className="flex items-center gap-3 text-xl font-semibold text-white">
-                  <span className="text-[#ef4444] text-[1.75rem] font-bold">×</span>
-                  {problem}
-                </div>
-              ))}
             </div>
           </div>
         </section>
