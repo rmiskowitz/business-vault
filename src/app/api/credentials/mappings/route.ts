@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+export const dynamic = 'force-dynamic'
 
-// POST - Create mapping
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase environment variables not configured')
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -13,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
@@ -33,7 +42,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
     
-    // Verify connection belongs to user
     const { data: connection } = await supabase
       .from('credential_provider_connections')
       .select('id')
@@ -45,7 +53,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid connection' }, { status: 400 })
     }
     
-    // Create mapping
     const { data, error } = await supabase
       .from('credential_asset_mappings')
       .upsert({
@@ -75,7 +82,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET - Get mappings for an asset
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -84,7 +90,7 @@ export async function GET(request: NextRequest) {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
@@ -122,7 +128,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// DELETE - Remove mapping
 export async function DELETE(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization')
@@ -131,7 +136,7 @@ export async function DELETE(request: NextRequest) {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {

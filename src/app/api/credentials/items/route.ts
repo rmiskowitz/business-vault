@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { decrypt, encrypt } from '@/lib/encryption'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+export const dynamic = 'force-dynamic'
+
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase environment variables not configured')
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
 async function refreshTokenIfNeeded(
   supabase: any,
@@ -12,7 +22,6 @@ async function refreshTokenIfNeeded(
   const now = new Date()
   const expiresAt = new Date(connection.token_expires_at)
   
-  // If token expires in less than 5 minutes, refresh it
   if (expiresAt.getTime() - now.getTime() < 5 * 60 * 1000) {
     const clientId = decrypt(connection.client_id_encrypted)
     const clientSecret = decrypt(connection.client_secret_encrypted)
@@ -39,7 +48,6 @@ async function refreshTokenIfNeeded(
     const expiresIn = tokenData.expires_in || 3600
     const newTokenExpiresAt = new Date(Date.now() + expiresIn * 1000).toISOString()
     
-    // Update token in database
     await supabase
       .from('credential_provider_connections')
       .update({
@@ -63,18 +71,16 @@ export async function GET(request: NextRequest) {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get provider from query params (default to bitwarden)
     const { searchParams } = new URL(request.url)
     const provider = searchParams.get('provider') || 'bitwarden'
     
-    // Get user's connection
     const { data: connection, error: connError } = await supabase
       .from('credential_provider_connections')
       .select('*')
@@ -89,10 +95,8 @@ export async function GET(request: NextRequest) {
       )
     }
     
-    // Get valid access token (refresh if needed)
     const accessToken = await refreshTokenIfNeeded(supabase, connection)
     
-    // Fetch vault items from Bitwarden
     const itemsResponse = await fetch('https://api.bitwarden.com/list/object/items', {
       method: 'GET',
       headers: {
@@ -111,7 +115,6 @@ export async function GET(request: NextRequest) {
     
     const itemsData = await itemsResponse.json()
     
-    // Get existing mappings for this user
     const { data: mappings } = await supabase
       .from('credential_asset_mappings')
       .select('provider_item_id, asset_type, asset_id')
@@ -121,16 +124,15 @@ export async function GET(request: NextRequest) {
       (mappings || []).map(m => [m.provider_item_id, { asset_type: m.asset_type, asset_id: m.asset_id }])
     )
     
-    // Return items with mapping info (but NOT the actual passwords)
     const items = (itemsData.data || []).map((item: any) => ({
       id: item.id,
       name: item.name,
-      type: item.type, // 1 = login, 2 = secure note, 3 = card, 4 = identity
+      type: item.type,
       url: item.login?.uris?.[0]?.uri || null,
       username: item.login?.username || null,
       folderId: item.folderId,
       mapping: mappingLookup.get(item.id) || null,
-    })).filter((item: any) => item.type === 1) // Only return login items
+    })).filter((item: any) => item.type === 1)
     
     return NextResponse.json({
       items,

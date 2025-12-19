@@ -2,8 +2,18 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { decrypt, encrypt } from '@/lib/encryption'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+export const dynamic = 'force-dynamic'
+
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase environment variables not configured')
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
 async function refreshTokenIfNeeded(
   supabase: any,
@@ -61,7 +71,7 @@ export async function POST(request: NextRequest) {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
@@ -74,7 +84,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Item ID is required' }, { status: 400 })
     }
     
-    // Get user's connection
     const { data: connection, error: connError } = await supabase
       .from('credential_provider_connections')
       .select('*')
@@ -89,10 +98,8 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Get valid access token
     const accessToken = await refreshTokenIfNeeded(supabase, connection)
     
-    // Fetch specific item from Bitwarden
     const itemResponse = await fetch(`https://api.bitwarden.com/object/item/${itemId}`, {
       method: 'GET',
       headers: {
@@ -111,10 +118,8 @@ export async function POST(request: NextRequest) {
     const itemData = await itemResponse.json()
     const item = itemData.data
     
-    // Log the credential access for audit
     console.log(`[AUDIT] User ${user.id} revealed credentials for item ${itemId} at ${new Date().toISOString()}`)
     
-    // Return credential data (password will be shown transiently in UI)
     return NextResponse.json({
       id: item.id,
       name: item.name,
@@ -122,7 +127,6 @@ export async function POST(request: NextRequest) {
       password: item.login?.password || null,
       url: item.login?.uris?.[0]?.uri || null,
       notes: item.notes || null,
-      // Auto-expire hint for frontend
       expiresInSeconds: 30,
     })
     

@@ -2,30 +2,36 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { encrypt } from '@/lib/encryption'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+export const dynamic = 'force-dynamic'
+
+function getSupabaseClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Supabase environment variables not configured')
+  }
+  
+  return createClient(supabaseUrl, supabaseServiceKey)
+}
 
 export async function POST(request: NextRequest) {
   try {
     const { clientId, clientSecret, provider = 'bitwarden' } = await request.json()
     
-    // Get user from auth header
     const authHeader = request.headers.get('authorization')
     if (!authHeader) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
     const token = authHeader.replace('Bearer ', '')
-    
-    // Create Supabase client with user's token
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Validate credentials with Bitwarden API
     const tokenResponse = await fetch('https://identity.bitwarden.com/connect/token', {
       method: 'POST',
       headers: {
@@ -53,12 +59,10 @@ export async function POST(request: NextRequest) {
     const expiresIn = tokenData.expires_in || 3600
     const tokenExpiresAt = new Date(Date.now() + expiresIn * 1000).toISOString()
     
-    // Encrypt credentials
     const clientIdEncrypted = encrypt(clientId)
     const clientSecretEncrypted = encrypt(clientSecret)
     const accessTokenEncrypted = encrypt(accessToken)
     
-    // Store in database (upsert to handle reconnection)
     const { data, error } = await supabase
       .from('credential_provider_connections')
       .upsert({
@@ -104,14 +108,13 @@ export async function GET(request: NextRequest) {
     }
     
     const token = authHeader.replace('Bearer ', '')
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = getSupabaseClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
-    // Get user's connections
     const { data: connections, error } = await supabase
       .from('credential_provider_connections')
       .select('id, provider, created_at, updated_at')
