@@ -32,6 +32,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    // Determine scope based on client_id format
+    // Organization keys start with "organization.", personal keys start with "user."
+    const isOrganization = clientId.startsWith('organization.')
+    const scope = isOrganization ? 'api.organization' : 'api'
+    
+    console.log(`Attempting Bitwarden auth with scope: ${scope}, clientId prefix: ${clientId.substring(0, 15)}...`)
+    
     const tokenResponse = await fetch('https://identity.bitwarden.com/connect/token', {
       method: 'POST',
       headers: {
@@ -41,7 +48,7 @@ export async function POST(request: NextRequest) {
         grant_type: 'client_credentials',
         client_id: clientId,
         client_secret: clientSecret,
-        scope: 'api',
+        scope: scope,
       }),
     })
     
