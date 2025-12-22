@@ -363,3 +363,4 @@ export default function PhysicalAssetsPage() {
     </div>
   )
 }
+
