@@ -1,83 +1,110 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { PhysicalAsset } from '@/lib/types'
 
 export default function PhysicalAssetsPage() {
-  const [assets, setAssets] = useState<PhysicalAsset[]>([])
-  const [loading, setLoading] = useState(true)
+  const [assets, setAssets] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+
   const [formData, setFormData] = useState({
     name: '',
-    category: '',
-    location: '',
+    type: 'equipment',
     serial_number: '',
     purchase_date: '',
     purchase_price: '',
-    warranty_expires: '',
+    location: '',
+    condition: '',
     notes: '',
   })
 
-  useEffect(() => {
-    fetchAssets()
+  const fetchAssets = useCallback(async () => {
+    try {
+      setIsLoading(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) return
+      
+      const { data, error } = await supabase
+        .from('physical_assets')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false })
+      
+      if (error) throw error
+      setAssets(data || [])
+    } catch (err) {
+      console.error('Error:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }, [])
 
-  const fetchAssets = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+  useEffect(() => {
+    fetchAssets()
+  }, [fetchAssets])
 
-    const { data, error } = await supabase
-      .from('physical_assets')
-      .select('*')
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
-
-    if (!error && data) {
-      setAssets(data)
-    }
-    setLoading(false)
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      type: 'equipment',
+      serial_number: '',
+      purchase_date: '',
+      purchase_price: '',
+      location: '',
+      condition: '',
+      notes: '',
+    })
+    setEditingId(null)
+    setShowForm(false)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
+    try {
+      setIsSaving(true)
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.user) return
 
-    const payload = {
-      name: formData.name,
-      category: formData.category,
-      location: formData.location,
-      serial_number: formData.serial_number || null,
-      purchase_date: formData.purchase_date || null,
-      purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
-      warranty_expires: formData.warranty_expires || null,
-      notes: formData.notes || null,
-      user_id: user.id,
+      const payload = {
+        user_id: session.user.id,
+        name: formData.name,
+        type: formData.type,
+        serial_number: formData.serial_number || null,
+        purchase_date: formData.purchase_date || null,
+        purchase_price: formData.purchase_price ? parseFloat(formData.purchase_price) : null,
+        location: formData.location || null,
+        condition: formData.condition || null,
+        notes: formData.notes || null,
+      }
+
+      if (editingId) {
+        await supabase.from('physical_assets').update(payload).eq('id', editingId)
+      } else {
+        await supabase.from('physical_assets').insert(payload)
+      }
+
+      resetForm()
+      await fetchAssets()
+    } catch (err) {
+      console.error('Error:', err)
+    } finally {
+      setIsSaving(false)
     }
-
-    if (editingId) {
-      await supabase.from('physical_assets').update(payload).eq('id', editingId)
-    } else {
-      await supabase.from('physical_assets').insert(payload)
-    }
-
-    setShowForm(false)
-    setEditingId(null)
-    setFormData({ name: '', category: '', location: '', serial_number: '', purchase_date: '', purchase_price: '', warranty_expires: '', notes: '' })
-    fetchAssets()
   }
 
-  const handleEdit = (asset: PhysicalAsset) => {
+  const handleEdit = (asset: any) => {
     setFormData({
       name: asset.name,
-      category: asset.category,
-      location: asset.location,
+      type: asset.type || 'equipment',
       serial_number: asset.serial_number || '',
       purchase_date: asset.purchase_date || '',
       purchase_price: asset.purchase_price?.toString() || '',
-      warranty_expires: asset.warranty_expires || '',
+      location: asset.location || '',
+      condition: asset.condition || '',
       notes: asset.notes || '',
     })
     setEditingId(asset.id)
@@ -85,94 +112,252 @@ export default function PhysicalAssetsPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this asset?')) {
-      await supabase.from('physical_assets').delete().eq('id', id)
-      fetchAssets()
-    }
+    await supabase.from('physical_assets').delete().eq('id', id)
+    setDeleteId(null)
+    await fetchAssets()
   }
 
   return (
-    <div>
-      <div className="flex justify-between items-center mb-8">
+    <div className="max-w-4xl mx-auto">
+      <div className="flex items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Physical Assets</h1>
-          <p className="text-gray-600 mt-1">Track equipment, vehicles, and property</p>
+          <h1 className="text-2xl font-semibold text-white">Physical Assets</h1>
+          <p className="mt-1 text-[#71717a]">
+            Document equipment, vehicles, and other physical assets
+          </p>
         </div>
-        <button onClick={() => setShowForm(true)} className="btn-primary">
-          + Add Asset
-        </button>
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]"
+          >
+            <span>+</span>
+            <span>Add Asset</span>
+          </button>
+        )}
       </div>
 
       {showForm && (
-        <div className="card mb-8">
-          <h2 className="text-xl font-semibold mb-4">{editingId ? 'Edit' : 'Add'} Physical Asset</h2>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleSubmit} className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-6 mb-8 space-y-5">
+          <h2 className="text-lg font-medium text-white mb-4">
+            {editingId ? 'Edit Asset' : 'Add New Asset'}
+          </h2>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+              Asset Name *
+            </label>
+            <input
+              type="text"
+              required
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+              Asset Type
+            </label>
+            <select
+              value={formData.type}
+              onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
+            >
+              <option value="equipment">Equipment</option>
+              <option value="vehicle">Vehicle</option>
+              <option value="property">Property</option>
+              <option value="furniture">Furniture</option>
+              <option value="inventory">Inventory</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+              Serial Number / ID
+            </label>
+            <input
+              type="text"
+              value={formData.serial_number}
+              onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })}
+              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="label">Name *</label>
-              <input className="input" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+                Purchase Date
+              </label>
+              <input
+                type="date"
+                value={formData.purchase_date}
+                onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })}
+                className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
+              />
             </div>
             <div>
-              <label className="label">Category *</label>
-              <input className="input" required placeholder="e.g., Equipment, Vehicle, Furniture" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} />
+              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+                Purchase Price
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={formData.purchase_price}
+                onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })}
+                className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
+              />
             </div>
-            <div>
-              <label className="label">Location *</label>
-              <input className="input" required value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Serial Number</label>
-              <input className="input" value={formData.serial_number} onChange={(e) => setFormData({ ...formData, serial_number: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Purchase Date</label>
-              <input className="input" type="date" value={formData.purchase_date} onChange={(e) => setFormData({ ...formData, purchase_date: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Purchase Price</label>
-              <input className="input" type="number" step="0.01" value={formData.purchase_price} onChange={(e) => setFormData({ ...formData, purchase_price: e.target.value })} />
-            </div>
-            <div>
-              <label className="label">Warranty Expires</label>
-              <input className="input" type="date" value={formData.warranty_expires} onChange={(e) => setFormData({ ...formData, warranty_expires: e.target.value })} />
-            </div>
-            <div className="md:col-span-2">
-              <label className="label">Notes</label>
-              <textarea className="input" rows={3} value={formData.notes} onChange={(e) => setFormData({ ...formData, notes: e.target.value })} />
-            </div>
-            <div className="md:col-span-2 flex space-x-4">
-              <button type="submit" className="btn-primary">{editingId ? 'Update' : 'Add'} Asset</button>
-              <button type="button" onClick={() => { setShowForm(false); setEditingId(null); }} className="btn-secondary">Cancel</button>
-            </div>
-          </form>
-        </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+              Location
+            </label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              placeholder="e.g., Main Office, Warehouse"
+              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+              Condition
+            </label>
+            <select
+              value={formData.condition}
+              onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
+              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
+            >
+              <option value="">Select condition</option>
+              <option value="excellent">Excellent</option>
+              <option value="good">Good</option>
+              <option value="fair">Fair</option>
+              <option value="poor">Poor</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
+              Notes
+            </label>
+            <textarea
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              rows={3}
+              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none resize-none"
+            />
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={resetForm}
+              className="px-4 py-2 bg-[#18181b] text-[#a1a1aa] rounded-lg hover:bg-[#27272a]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isSaving}
+              className="flex-1 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706] disabled:opacity-50"
+            >
+              {isSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+        </form>
       )}
 
-      {loading ? (
-        <p className="text-gray-500">Loading assets...</p>
-      ) : assets.length === 0 ? (
-        <div className="card text-center py-12">
-          <p className="text-gray-500 mb-4">No physical assets yet</p>
-          <button onClick={() => setShowForm(true)} className="btn-primary">Add Your First Asset</button>
-        </div>
-      ) : (
-        <div className="grid gap-4">
-          {assets.map((asset) => (
-            <div key={asset.id} className="card">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="font-semibold text-lg text-gray-900">{asset.name}</h3>
-                  <p className="text-gray-600">{asset.category} • {asset.location}</p>
-                  {asset.serial_number && <p className="text-sm text-gray-500">S/N: {asset.serial_number}</p>}
-                  {asset.warranty_expires && <p className="text-sm text-gray-500">Warranty: {asset.warranty_expires}</p>}
-                  {asset.notes && <p className="text-sm text-gray-500 mt-2">{asset.notes}</p>}
-                </div>
-                <div className="flex space-x-2">
-                  <button onClick={() => handleEdit(asset)} className="text-blue-600 hover:text-blue-700">Edit</button>
-                  <button onClick={() => handleDelete(asset.id)} className="text-red-600 hover:text-red-700">Delete</button>
-                </div>
-              </div>
+      {!showForm && (
+        <>
+          {isLoading ? (
+            <div className="text-center py-12 text-[#71717a]">Loading...</div>
+          ) : assets.length === 0 ? (
+            <div className="text-center py-12 bg-[#0f0f12] rounded-xl border border-[#1e1e23]">
+              <div className="text-4xl mb-4">🏢</div>
+              <h3 className="text-lg font-medium text-white mb-2">No assets yet</h3>
+              <p className="text-[#71717a] mb-6">
+                Document your equipment, vehicles, and other physical assets.
+              </p>
+              <button
+                onClick={() => setShowForm(true)}
+                className="px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]"
+              >
+                Add Your First Asset
+              </button>
             </div>
-          ))}
+          ) : (
+            <div className="space-y-4">
+              {assets.map((asset) => (
+                <div
+                  key={asset.id}
+                  className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-5"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-medium text-white">{asset.name}</h3>
+                      <p className="text-sm text-[#71717a] capitalize">{asset.type}</p>
+                      {asset.location && (
+                        <p className="text-sm text-[#52525b]">Location: {asset.location}</p>
+                      )}
+                      {asset.serial_number && (
+                        <p className="text-sm text-[#52525b]">S/N: {asset.serial_number}</p>
+                      )}
+                      {asset.purchase_price && (
+                        <p className="text-sm text-[#52525b]">
+                          Value: ${asset.purchase_price.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleEdit(asset)}
+                        className="p-2 text-[#71717a] hover:text-white"
+                      >
+                        ✏️
+                      </button>
+                      <button
+                        onClick={() => setDeleteId(asset.id)}
+                        className="p-2 text-[#71717a] hover:text-red-400"
+                      >
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
+
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-white mb-2">Delete Asset</h3>
+            <p className="text-[#a1a1aa] mb-4">
+              Are you sure you want to delete this asset?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteId(null)}
+                className="flex-1 px-4 py-2 bg-[#18181b] text-[#a1a1aa] rounded-lg hover:bg-[#27272a]"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDelete(deleteId)}
+                className="flex-1 px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
