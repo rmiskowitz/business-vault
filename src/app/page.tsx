@@ -179,14 +179,18 @@ export default function Home() {
     },
   ];
 
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100">
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-zinc-950/90 backdrop-blur-sm border-b border-zinc-800">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-amber-500">
             Business Vault
           </Link>
+          
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link href="#features" className="text-zinc-400 hover:text-zinc-100 transition-colors">
               Features
@@ -201,7 +205,8 @@ export default function Home() {
               For Brokers
             </Link>
           </div>
-          <div className="flex items-center gap-4">
+          
+          <div className="hidden md:flex items-center gap-4">
             <Link href="/login" className="text-zinc-400 hover:text-zinc-100 transition-colors">
               Log In
             </Link>
@@ -212,30 +217,77 @@ export default function Home() {
               Build Your Vault
             </Link>
           </div>
+          
+          {/* Mobile Menu Button */}
+          <button 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 text-zinc-400 hover:text-zinc-100"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
         </div>
+        
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-zinc-950 border-t border-zinc-800 px-4 py-4 space-y-4">
+            <Link href="#features" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-400 hover:text-zinc-100 transition-colors py-2">
+              Features
+            </Link>
+            <Link href="#pricing" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-400 hover:text-zinc-100 transition-colors py-2">
+              Pricing
+            </Link>
+            <Link href="#assessment" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-400 hover:text-zinc-100 transition-colors py-2">
+              Assessment
+            </Link>
+            <Link href="/brokers" onClick={() => setMobileMenuOpen(false)} className="block text-amber-500 hover:text-amber-400 transition-colors font-medium py-2">
+              For Brokers
+            </Link>
+            <div className="pt-4 border-t border-zinc-800 space-y-3">
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)} className="block text-zinc-400 hover:text-zinc-100 transition-colors py-2">
+                Log In
+              </Link>
+              <Link
+                href="/signup"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block bg-amber-500 hover:bg-amber-400 text-zinc-950 px-4 py-3 rounded-lg font-medium transition-colors text-center"
+              >
+                Build Your Vault
+              </Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
-      <section className="pt-32 pb-20 px-6">
+      <section className="pt-28 sm:pt-32 pb-16 sm:pb-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl">
-            <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-6">
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-6">
               Get your business deal-ready{' '}
               <span className="text-amber-500">before due diligence starts.</span>
             </h1>
-            <p className="text-xl text-zinc-400 mb-8 max-w-2xl">
+            <p className="text-lg sm:text-xl text-zinc-400 mb-8 max-w-2xl">
               Business Vault organizes the assets buyers ask for — digital access, contracts, subscriptions, physical assets, and key relationships — so your sale doesn't stall, drag, or fall apart.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/signup"
-                className="bg-amber-500 hover:bg-amber-400 text-zinc-950 px-8 py-4 rounded-lg font-semibold text-lg transition-colors text-center"
+                className="bg-amber-500 hover:bg-amber-400 text-zinc-950 px-6 sm:px-8 py-4 rounded-lg font-semibold text-base sm:text-lg transition-colors text-center"
               >
                 Create Your Deal-Ready Vault →
               </Link>
               <Link
                 href="/brokers"
-                className="border border-amber-500 text-amber-500 hover:bg-amber-500/10 px-8 py-4 rounded-lg font-semibold text-lg transition-colors text-center"
+                className="border border-amber-500 text-amber-500 hover:bg-amber-500/10 px-6 sm:px-8 py-4 rounded-lg font-semibold text-base sm:text-lg transition-colors text-center"
               >
                 For Brokers →
               </Link>
@@ -243,45 +295,46 @@ export default function Home() {
           </div>
 
           {/* Dashboard Preview */}
-          <div className="mt-16 bg-zinc-900 rounded-2xl border border-zinc-800 p-6 shadow-2xl">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
-                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+          <div className="mt-12 sm:mt-16 bg-zinc-900 rounded-2xl border border-zinc-800 p-4 sm:p-6 shadow-2xl">
+            <div className="flex items-center justify-between mb-4 sm:mb-6">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-500"></div>
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-amber-500"></div>
+                <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500"></div>
               </div>
-              <span className="text-zinc-500 text-sm">Your Business Vault — All Documented</span>
+              <span className="text-zinc-500 text-xs sm:text-sm hidden sm:inline">Your Deal-Ready Vault — All Documented</span>
+              <span className="text-zinc-500 text-xs sm:hidden">Deal-Ready</span>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-zinc-800/50 rounded-xl p-4">
-                <div className="text-2xl mb-2">🌐</div>
-                <div className="text-zinc-400 text-sm">Domains</div>
-                <div className="text-2xl font-bold text-zinc-100">12</div>
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🌐</div>
+                <div className="text-zinc-400 text-xs sm:text-sm">Domains</div>
+                <div className="text-xl sm:text-2xl font-bold text-zinc-100">12</div>
                 <div className="text-amber-500 text-xs mt-1">2 Expiring</div>
               </div>
-              <div className="bg-zinc-800/50 rounded-xl p-4">
-                <div className="text-2xl mb-2">📄</div>
-                <div className="text-zinc-400 text-sm">Contracts</div>
-                <div className="text-2xl font-bold text-zinc-100">8</div>
+              <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">📄</div>
+                <div className="text-zinc-400 text-xs sm:text-sm">Contracts</div>
+                <div className="text-xl sm:text-2xl font-bold text-zinc-100">8</div>
                 <div className="text-emerald-500 text-xs mt-1">Current</div>
               </div>
-              <div className="bg-zinc-800/50 rounded-xl p-4">
-                <div className="text-2xl mb-2">💳</div>
-                <div className="text-zinc-400 text-sm">Monthly Spend</div>
-                <div className="text-2xl font-bold text-zinc-100">$2,847</div>
+              <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">💳</div>
+                <div className="text-zinc-400 text-xs sm:text-sm">Monthly Spend</div>
+                <div className="text-xl sm:text-2xl font-bold text-zinc-100">$2,847</div>
                 <div className="text-zinc-500 text-xs mt-1">Tracked</div>
               </div>
-              <div className="bg-zinc-800/50 rounded-xl p-4">
-                <div className="text-2xl mb-2">🏢</div>
-                <div className="text-zinc-400 text-sm">Physical Assets</div>
-                <div className="text-2xl font-bold text-zinc-100">34</div>
+              <div className="bg-zinc-800/50 rounded-xl p-3 sm:p-4">
+                <div className="text-xl sm:text-2xl mb-1 sm:mb-2">🏢</div>
+                <div className="text-zinc-400 text-xs sm:text-sm">Physical Assets</div>
+                <div className="text-xl sm:text-2xl font-bold text-zinc-100">34</div>
                 <div className="text-zinc-500 text-xs mt-1">Documented</div>
               </div>
             </div>
-            <div className="mt-4 bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-center gap-3">
+            <div className="mt-3 sm:mt-4 bg-amber-500/10 border border-amber-500/30 rounded-lg p-2.5 sm:p-3 flex items-center gap-2 sm:gap-3">
               <span className="text-amber-500">⚠️</span>
-              <span className="text-amber-500 text-sm">
-                <strong>Renewal Alert:</strong> acme-corp.com expires in 7 days
+              <span className="text-amber-500 text-xs sm:text-sm">
+                <strong>Renewal Alert:</strong> <span className="hidden sm:inline">acme-corp.com expires in 7 days</span><span className="sm:hidden">acme-corp.com — 7 days</span>
               </span>
             </div>
           </div>
@@ -289,57 +342,57 @@ export default function Home() {
       </section>
 
       {/* Assessment Section */}
-      <section id="assessment" className="py-20 px-6 bg-zinc-900/50">
+      <section id="assessment" className="py-16 sm:py-20 px-4 sm:px-6 bg-zinc-900/50">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
             How deal-ready is your business today?
           </h2>
-          <p className="text-zinc-400 text-center mb-12 text-lg">
+          <p className="text-zinc-400 text-center mb-8 sm:mb-12 text-base sm:text-lg">
             Most owners can't confidently answer yes to all five.
           </p>
 
-          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8">
+          <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-4 sm:p-8">
             {/* Traffic Light Indicator */}
-            <div className="flex items-center justify-center gap-4 mb-8">
-              <div className="text-zinc-500 text-sm">Click →</div>
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${getStatusBgLight()} border ${getStatusBorderColor()}`}>
-                <div className={`w-8 h-8 rounded-full transition-all duration-300 ${getStatusBgColor()} shadow-lg`} 
+            <div className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="text-zinc-500 text-xs sm:text-sm">Click →</div>
+              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${getStatusBgLight()} border ${getStatusBorderColor()}`}>
+                <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all duration-300 ${getStatusBgColor()} shadow-lg`} 
                      style={{ boxShadow: `0 0 20px ${checkedItems.size <= 1 ? 'rgba(239,68,68,0.5)' : checkedItems.size <= 3 ? 'rgba(245,158,11,0.5)' : 'rgba(16,185,129,0.5)'}` }}>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {checklistItems.map((item, index) => (
                 <button
                   key={index}
                   onClick={() => toggleCheck(index)}
-                  className={`w-full text-left p-4 rounded-xl border transition-all ${
+                  className={`w-full text-left p-3 sm:p-4 rounded-xl border transition-all ${
                     checkedItems.has(index)
                       ? 'bg-emerald-500/10 border-emerald-500/50'
-                      : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600'
+                      : 'bg-zinc-800/50 border-zinc-700 hover:border-zinc-600 active:border-zinc-500'
                   }`}
                 >
-                  <div className="flex items-start gap-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
                     <div
-                      className={`w-6 h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
+                      className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md border-2 flex items-center justify-center flex-shrink-0 mt-0.5 transition-colors ${
                         checkedItems.has(index)
                           ? 'bg-emerald-500 border-emerald-500'
                           : 'border-zinc-600'
                       }`}
                     >
                       {checkedItems.has(index) && (
-                        <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
                     </div>
-                    <div>
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-lg">{item.icon}</span>
-                        <span className="font-semibold text-zinc-100">{item.title}</span>
+                        <span className="text-base sm:text-lg">{item.icon}</span>
+                        <span className="font-semibold text-zinc-100 text-sm sm:text-base">{item.title}</span>
                       </div>
-                      <p className="text-zinc-400 text-sm">{item.description}</p>
+                      <p className="text-zinc-400 text-xs sm:text-sm leading-relaxed">{item.description}</p>
                     </div>
                   </div>
                 </button>
@@ -347,24 +400,24 @@ export default function Home() {
             </div>
 
             {/* Results Section with Traffic Light Status */}
-            <div className={`mt-8 pt-6 border-t border-zinc-800 rounded-xl transition-all duration-300`}>
+            <div className={`mt-6 sm:mt-8 pt-6 border-t border-zinc-800 rounded-xl transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-4 h-4 rounded-full ${getStatusBgColor()}`}></div>
-                  <span className="text-zinc-400">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <div className={`w-3 h-3 sm:w-4 sm:h-4 rounded-full ${getStatusBgColor()}`}></div>
+                  <span className="text-zinc-400 text-sm sm:text-base">
                     {checkedItems.size} of 5
                   </span>
                 </div>
-                <span className={`font-bold text-lg ${getStatusColor()}`}>
+                <span className={`font-bold text-base sm:text-lg ${getStatusColor()}`}>
                   {getStatusText()}
                 </span>
               </div>
-              <p className="text-zinc-400 text-sm mb-6">
+              <p className="text-zinc-400 text-xs sm:text-sm mb-6">
                 {getStatusMessage()}
               </p>
               <Link
                 href="/signup"
-                className="block w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-6 py-4 rounded-lg font-semibold text-center transition-colors"
+                className="block w-full bg-amber-500 hover:bg-amber-400 text-zinc-950 px-6 py-3 sm:py-4 rounded-lg font-semibold text-center transition-colors"
               >
                 Create Your Deal-Ready Vault
               </Link>
@@ -374,17 +427,17 @@ export default function Home() {
       </section>
 
       {/* Story Section */}
-      <section className="py-20 px-6">
+      <section className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
             When businesses aren't deal-ready,{' '}
             <span className="text-amber-500">value gets lost.</span>
           </h2>
-          <p className="text-zinc-400 text-center mb-16 text-lg max-w-2xl mx-auto">
+          <p className="text-zinc-400 text-center mb-10 sm:mb-16 text-base sm:text-lg max-w-2xl mx-auto">
             You don't think about your documentation — until it costs you the deal.
           </p>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid sm:grid-cols-2 gap-4 sm:gap-8">
             {storyCards.map((card, index) => (
               <div
                 key={index}
@@ -398,9 +451,9 @@ export default function Home() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent"></div>
                 </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-3 text-zinc-100">{card.title}</h3>
-                  <p className="text-zinc-400">{card.description}</p>
+                <div className="p-4 sm:p-6">
+                  <h3 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 text-zinc-100">{card.title}</h3>
+                  <p className="text-zinc-400 text-sm sm:text-base">{card.description}</p>
                 </div>
               </div>
             ))}
@@ -409,26 +462,26 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-20 px-6 bg-zinc-900/50">
+      <section id="features" className="py-16 sm:py-20 px-4 sm:px-6 bg-zinc-900/50">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
             What buyers ask for in due diligence
           </h2>
-          <p className="text-zinc-400 text-center mb-16 text-lg max-w-2xl mx-auto">
+          <p className="text-zinc-400 text-center mb-10 sm:mb-16 text-base sm:text-lg max-w-2xl mx-auto">
             Business Vault organizes your business the way buyers and brokers expect to see it.
           </p>
 
-          <div className="grid md:grid-cols-3 lg:grid-cols-5 gap-6">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
             {featureCategories.map((category, index) => (
               <div
                 key={index}
-                className="bg-zinc-900 rounded-xl border border-zinc-800 p-6 hover:border-amber-500/30 transition-colors"
+                className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 sm:p-6 hover:border-amber-500/30 transition-colors"
               >
-                <h3 className="font-bold text-amber-500 mb-4">{category.title}</h3>
-                <ul className="space-y-2">
+                <h3 className="font-bold text-amber-500 mb-3 sm:mb-4 text-sm sm:text-base">{category.title}</h3>
+                <ul className="space-y-1.5 sm:space-y-2">
                   {category.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="text-zinc-400 text-sm flex items-center gap-2">
-                      <span className="text-emerald-500">✓</span>
+                    <li key={itemIndex} className="text-zinc-400 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-emerald-500 text-xs">✓</span>
                       {item}
                     </li>
                   ))}
@@ -437,27 +490,27 @@ export default function Home() {
             ))}
           </div>
 
-          <p className="text-center mt-12 text-xl text-zinc-300 italic">
+          <p className="text-center mt-8 sm:mt-12 text-base sm:text-xl text-zinc-300 italic">
             Everything in one place. Clean. Transferable. Buyer-ready.
           </p>
         </div>
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-6">
+      <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6">
         <div className="max-w-7xl mx-auto">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
             Simple Pricing. Start Free.
           </h2>
-          <p className="text-zinc-400 text-center mb-8 text-lg">
+          <p className="text-zinc-400 text-center mb-6 sm:mb-8 text-base sm:text-lg">
             Document your first 5 assets at no cost. Upgrade when you're ready.
           </p>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center gap-4 mb-12">
+          <div className="flex items-center justify-center gap-2 sm:gap-4 mb-8 sm:mb-12">
             <button
               onClick={() => setBillingCycle('monthly')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                 billingCycle === 'monthly'
                   ? 'bg-amber-500 text-zinc-950'
                   : 'text-zinc-400 hover:text-zinc-100'
@@ -467,7 +520,7 @@ export default function Home() {
             </button>
             <button
               onClick={() => setBillingCycle('annual')}
-              className={`px-4 py-2 rounded-lg transition-colors ${
+              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
                 billingCycle === 'annual'
                   ? 'bg-amber-500 text-zinc-950'
                   : 'text-zinc-400 hover:text-zinc-100'
@@ -477,28 +530,28 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {pricingTiers.map((tier, index) => (
               <div
                 key={index}
-                className={`rounded-2xl border p-6 ${
+                className={`rounded-2xl border p-5 sm:p-6 ${
                   tier.highlighted
                     ? 'bg-amber-500/10 border-amber-500'
                     : 'bg-zinc-900 border-zinc-800'
                 }`}
               >
                 {tier.highlighted && (
-                  <div className="text-amber-500 text-sm font-semibold mb-2">Most Popular</div>
+                  <div className="text-amber-500 text-xs sm:text-sm font-semibold mb-2">Most Popular</div>
                 )}
-                <div className="text-zinc-400 text-sm mb-1">{tier.label}</div>
-                <h3 className="text-xl font-bold mb-4">{tier.name}</h3>
-                <div className="mb-6">
-                  <span className="text-4xl font-bold">{tier.price}</span>
-                  <span className="text-zinc-400">{tier.period}</span>
+                <div className="text-zinc-400 text-xs sm:text-sm mb-1">{tier.label}</div>
+                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{tier.name}</h3>
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-3xl sm:text-4xl font-bold">{tier.price}</span>
+                  <span className="text-zinc-400 text-sm sm:text-base">{tier.period}</span>
                 </div>
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
                   {tier.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center gap-2 text-sm">
+                    <li key={featureIndex} className="flex items-center gap-2 text-xs sm:text-sm">
                       <span className={feature.includes('Coming Soon') ? 'text-zinc-500' : 'text-emerald-500'}>
                         {feature.includes('Coming Soon') ? '◦' : '✓'}
                       </span>
@@ -510,7 +563,7 @@ export default function Home() {
                 </ul>
                 <Link
                   href={tier.href}
-                  className={`block w-full py-3 rounded-lg font-semibold text-center transition-colors ${
+                  className={`block w-full py-2.5 sm:py-3 rounded-lg font-semibold text-center transition-colors text-sm sm:text-base ${
                     tier.highlighted
                       ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950'
                       : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-100'
@@ -522,7 +575,7 @@ export default function Home() {
             ))}
           </div>
 
-          <p className="text-center mt-8 text-zinc-400">
+          <p className="text-center mt-6 sm:mt-8 text-zinc-400 text-sm sm:text-base px-4">
             Looking to standardize deal readiness across your listings?{' '}
             <Link href="/brokers" className="text-amber-500 hover:text-amber-400 font-semibold">
               Contact us about the Broker Program.
@@ -532,30 +585,30 @@ export default function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="py-20 px-6 bg-zinc-900/50">
+      <section className="py-16 sm:py-20 px-4 sm:px-6 bg-zinc-900/50">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">
             Know what you have.{' '}
             <span className="text-amber-500">Access it when it matters.</span>
           </h2>
-          <p className="text-zinc-400 text-lg mb-8">
+          <p className="text-zinc-400 text-base sm:text-lg mb-6 sm:mb-8">
             Don't wait for due diligence to discover what's missing. Start documenting your business today.
           </p>
           <Link
             href="/signup"
-            className="inline-block bg-amber-500 hover:bg-amber-400 text-zinc-950 px-8 py-4 rounded-lg font-semibold text-lg transition-colors"
+            className="inline-block bg-amber-500 hover:bg-amber-400 text-zinc-950 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg transition-colors"
           >
             Build Your Vault →
           </Link>
-          <p className="text-zinc-500 text-sm mt-4">
+          <p className="text-zinc-500 text-xs sm:text-sm mt-4">
             Free for up to 5 assets. No credit card required.
           </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 border-t border-zinc-800">
-        <div className="max-w-7xl mx-auto text-center text-zinc-500 text-sm">
+      <footer className="py-6 sm:py-8 px-4 sm:px-6 border-t border-zinc-800">
+        <div className="max-w-7xl mx-auto text-center text-zinc-500 text-xs sm:text-sm">
           © 2025 Business Vault. All rights reserved.
         </div>
       </footer>
