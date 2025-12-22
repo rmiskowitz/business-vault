@@ -3,16 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useUserContext, useDeleteConfirmation, useSectionStatus } from '@/lib/hooks/useVaultAccess'
-import { 
-  ContractType, 
-  CONTRACT_TYPE_LABELS, 
-  CONTRACT_TYPE_CATEGORIES,
-  SECTIONS 
-} from '@/lib/types'
-
-// ============================================================================
-// DELETE MODAL COMPONENT
-// ============================================================================
+import { ContractType, CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CATEGORIES, SECTIONS } from '@/lib/types'
 
 function DeleteModal({ isOpen, onClose, onConfirm, itemName, hasReviewers }: {
   isOpen: boolean
@@ -29,9 +20,7 @@ function DeleteModal({ isOpen, onClose, onConfirm, itemName, hasReviewers }: {
         <p className="text-[#a1a1aa] mb-4">Are you sure you want to delete "{itemName}"?</p>
         {hasReviewers && (
           <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-            <p className="text-sm text-yellow-400">
-              ⚠️ A broker or buyer has access to your vault. Deleting this item will affect what they see.
-            </p>
+            <p className="text-sm text-yellow-400">A broker or buyer has access to your vault.</p>
           </div>
         )}
         <div className="flex gap-3">
@@ -42,10 +31,6 @@ function DeleteModal({ isOpen, onClose, onConfirm, itemName, hasReviewers }: {
     </div>
   )
 }
-
-// ============================================================================
-// MAIN PAGE COMPONENT
-// ============================================================================
 
 export default function ContractsPage() {
   const { context } = useUserContext()
@@ -60,7 +45,6 @@ export default function ContractsPage() {
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; contract: any | null }>({ isOpen: false, contract: null })
   const [filter, setFilter] = useState<'all' | 'contracts' | 'ownership' | 'financial'>('all')
 
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     type: 'other_contract' as ContractType,
@@ -91,7 +75,6 @@ export default function ContractsPage() {
       if (error) throw error
       setContracts(data || [])
       
-      // Update section status
       if (!isReviewer) {
         const count = data?.length || 0
         const status = count === 0 ? 'not_started' : count >= 5 ? 'complete' : 'in_progress'
@@ -107,18 +90,7 @@ export default function ContractsPage() {
   useEffect(() => { fetchContracts() }, [fetchContracts])
 
   const resetForm = () => {
-    setFormData({
-      name: '',
-      type: 'other_contract',
-      counterparty: '',
-      effective_date: '',
-      expiration_date: '',
-      renewal_terms: '',
-      document_location: '',
-      key_terms: '',
-      monthly_cost: '',
-      internal_notes: ''
-    })
+    setFormData({ name: '', type: 'other_contract', counterparty: '', effective_date: '', expiration_date: '', renewal_terms: '', document_location: '', key_terms: '', monthly_cost: '', internal_notes: '' })
     setEditingId(null)
     setShowForm(false)
   }
@@ -199,77 +171,45 @@ export default function ContractsPage() {
       <div className="flex items-start justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-semibold text-white">Contracts & Legal</h1>
-          <p className="mt-1 text-[#71717a]">
-            {isReviewer ? 'Review documented contracts and legal documents' : 'Document contracts, ownership, and financial records'}
-          </p>
+          <p className="mt-1 text-[#71717a]">Document contracts, ownership, and financial records</p>
         </div>
         {!isReviewer && !showForm && (
-          <button
-            onClick={() => setShowForm(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]"
-          >
+          <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]">
             <span>+</span><span>Document Item</span>
           </button>
         )}
       </div>
 
-      {/* Filter Tabs */}
       {!showForm && contracts.length > 0 && (
-        <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+        <div className="flex gap-2 mb-6">
           {(['all', 'contracts', 'ownership', 'financial'] as const).map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-3 py-1.5 text-sm rounded-lg whitespace-nowrap ${
-                filter === f
-                  ? 'bg-[#f59e0b]/20 text-[#f59e0b]'
-                  : 'bg-[#18181b] text-[#71717a] hover:bg-[#27272a]'
-              }`}
-            >
-              {f === 'all' ? 'All' : f === 'contracts' ? 'Contracts' : f === 'ownership' ? 'Ownership & Legal' : 'Financial'}
+            <button key={f} onClick={() => setFilter(f)} className={`px-3 py-1.5 text-sm rounded-lg ${filter === f ? 'bg-[#f59e0b]/20 text-[#f59e0b]' : 'bg-[#18181b] text-[#71717a] hover:bg-[#27272a]'}`}>
+              {f === 'all' ? 'All' : f === 'contracts' ? 'Contracts' : f === 'ownership' ? 'Ownership' : 'Financial'}
             </button>
           ))}
         </div>
       )}
 
-      {/* Form */}
       {showForm && (
         <form onSubmit={handleSubmit} className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-6 mb-8 space-y-5">
           <h2 className="text-lg font-medium text-white mb-4">{editingId ? 'Edit Document' : 'Document New Item'}</h2>
           
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Document Name *</label>
-            <input
-              type="text"
-              required
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="e.g., Office Lease 2024"
-              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none"
-            />
+            <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Document Type</label>
-            <select
-              value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as ContractType })}
-              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
-            >
-              <optgroup label="Contracts & Agreements">
-                {CONTRACT_TYPE_CATEGORIES.contracts.map((type) => (
-                  <option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>
-                ))}
+            <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as ContractType })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white">
+              <optgroup label="Contracts">
+                {CONTRACT_TYPE_CATEGORIES.contracts.map((type) => (<option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>))}
               </optgroup>
-              <optgroup label="Ownership & Legal Documents">
-                {CONTRACT_TYPE_CATEGORIES.ownership.map((type) => (
-                  <option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>
-                ))}
+              <optgroup label="Ownership & Legal">
+                {CONTRACT_TYPE_CATEGORIES.ownership.map((type) => (<option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>))}
               </optgroup>
-              <optgroup label="Financial Documents">
-                {CONTRACT_TYPE_CATEGORIES.financial.map((type) => (
-                  <option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>
-                ))}
+              <optgroup label="Financial">
+                {CONTRACT_TYPE_CATEGORIES.financial.map((type) => (<option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>))}
               </optgroup>
             </select>
           </div>
@@ -277,86 +217,40 @@ export default function ContractsPage() {
           {isContract && (
             <div>
               <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Counterparty</label>
-              <input
-                type="text"
-                value={formData.counterparty}
-                onChange={(e) => setFormData({ ...formData, counterparty: e.target.value })}
-                placeholder="e.g., ABC Landlord LLC"
-                className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none"
-              />
+              <input type="text" value={formData.counterparty} onChange={(e) => setFormData({ ...formData, counterparty: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-[#a1a1aa] mb-2">{isFinancial ? 'Document Date' : 'Effective Date'}</label>
-              <input
-                type="date"
-                value={formData.effective_date}
-                onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
-                className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
-              />
+              <input type="date" value={formData.effective_date} onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
             </div>
             {!isFinancial && (
               <div>
                 <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Expiration Date</label>
-                <input
-                  type="date"
-                  value={formData.expiration_date}
-                  onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })}
-                  className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none"
-                />
+                <input type="date" value={formData.expiration_date} onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
               </div>
             )}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Document Location</label>
-            <input
-              type="text"
-              value={formData.document_location}
-              onChange={(e) => setFormData({ ...formData, document_location: e.target.value })}
-              placeholder="e.g., Google Drive > Contracts folder"
-              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none"
-            />
+            <input type="text" value={formData.document_location} onChange={(e) => setFormData({ ...formData, document_location: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">{isFinancial ? 'Key Figures' : 'Key Terms'}</label>
-            <textarea
-              value={formData.key_terms}
-              onChange={(e) => setFormData({ ...formData, key_terms: e.target.value })}
-              rows={3}
-              className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none resize-none"
-            />
+            <textarea value={formData.key_terms} onChange={(e) => setFormData({ ...formData, key_terms: e.target.value })} rows={3} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white resize-none" />
           </div>
 
-          {!isReviewer && (
-            <div>
-              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">
-                Internal Notes <span className="text-[#52525b] text-xs">(Hidden from reviewers)</span>
-              </label>
-              <textarea
-                value={formData.internal_notes}
-                onChange={(e) => setFormData({ ...formData, internal_notes: e.target.value })}
-                rows={2}
-                className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none resize-none"
-              />
-            </div>
-          )}
-
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={resetForm} className="px-4 py-2 bg-[#18181b] text-[#a1a1aa] rounded-lg hover:bg-[#27272a]">
-              Cancel
-            </button>
-            <button type="submit" disabled={isSaving} className="flex-1 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706] disabled:opacity-50">
-              {isSaving ? 'Saving...' : 'Save Document'}
-            </button>
+            <button type="button" onClick={resetForm} className="px-4 py-2 bg-[#18181b] text-[#a1a1aa] rounded-lg hover:bg-[#27272a]">Cancel</button>
+            <button type="submit" disabled={isSaving} className="flex-1 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706] disabled:opacity-50">{isSaving ? 'Saving...' : 'Save'}</button>
           </div>
         </form>
       )}
 
-      {/* List */}
       {!showForm && (
         <>
           {isLoading ? (
@@ -365,34 +259,23 @@ export default function ContractsPage() {
             <div className="text-center py-12 bg-[#0f0f12] rounded-xl border border-[#1e1e23]">
               <div className="text-4xl mb-4">📄</div>
               <h3 className="text-lg font-medium text-white mb-2">Nothing documented yet</h3>
-              <p className="text-[#71717a] mb-6">Start by documenting your contracts, legal documents, and financials.</p>
-              {!isReviewer && (
-                <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]">
-                  Document Your First Item
-                </button>
-              )}
+              <p className="text-[#71717a] mb-6">Start by documenting your contracts and legal documents.</p>
+              {!isReviewer && <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]">Document Your First Item</button>}
             </div>
           ) : (
             <div className="space-y-4">
               {filteredContracts.map((contract) => (
-                <div key={contract.id} className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-5 hover:border-[#27272a]">
+                <div key={contract.id} className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-5">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-medium text-white truncate">{contract.name}</h3>
-                        {contract.expiration_date && new Date(contract.expiration_date) < new Date() && (
-                          <span className="px-2 py-0.5 text-xs bg-red-500/20 text-red-400 rounded-full">Expired</span>
-                        )}
-                      </div>
-                      <p className="mt-1 text-sm text-[#71717a]">{CONTRACT_TYPE_LABELS[contract.type as ContractType] || contract.type}</p>
-                      {contract.counterparty && <p className="text-sm text-[#52525b]"><span className="text-[#3f3f46]">Party:</span> {contract.counterparty}</p>}
-                      {contract.expiration_date && <p className="text-sm text-[#52525b]"><span className="text-[#3f3f46]">Expires:</span> {new Date(contract.expiration_date).toLocaleDateString()}</p>}
-                      {contract.document_location && <p className="text-sm text-[#52525b] truncate"><span className="text-[#3f3f46]">Location:</span> {contract.document_location}</p>}
+                    <div>
+                      <h3 className="font-medium text-white">{contract.name}</h3>
+                      <p className="text-sm text-[#71717a]">{CONTRACT_TYPE_LABELS[contract.type as ContractType] || contract.type}</p>
+                      {contract.expiration_date && <p className="text-sm text-[#52525b]">Expires: {new Date(contract.expiration_date).toLocaleDateString()}</p>}
                     </div>
                     {!isReviewer && (
-                      <div className="flex items-center gap-2">
-                        <button onClick={() => handleEdit(contract)} className="p-2 text-[#71717a] hover:text-white" title="Edit">✏️</button>
-                        <button onClick={() => setDeleteModal({ isOpen: true, contract })} className="p-2 text-[#71717a] hover:text-red-400" title="Delete">🗑️</button>
+                      <div className="flex gap-2">
+                        <button onClick={() => handleEdit(contract)} className="p-2 text-[#71717a] hover:text-white">✏️</button>
+                        <button onClick={() => setDeleteModal({ isOpen: true, contract })} className="p-2 text-[#71717a] hover:text-red-400">🗑️</button>
                       </div>
                     )}
                   </div>
@@ -403,13 +286,7 @@ export default function ContractsPage() {
         </>
       )}
 
-      <DeleteModal
-        isOpen={deleteModal.isOpen}
-        onClose={() => setDeleteModal({ isOpen: false, contract: null })}
-        onConfirm={handleDelete}
-        itemName={deleteModal.contract?.name || ''}
-        hasReviewers={hasActiveReviewers}
-      />
+      <DeleteModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, contract: null })} onConfirm={handleDelete} itemName={deleteModal.contract?.name || ''} hasReviewers={hasActiveReviewers} />
     </div>
   )
 }
