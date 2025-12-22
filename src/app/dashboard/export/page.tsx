@@ -1,118 +1,450 @@
-'use client'
+// ============================================================================
+// Business Vault: Download Report Page
+// app/dashboard/export/page.tsx
+// ============================================================================
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useUserContext, useSectionStatus } from '@/lib/hooks/useVaultAccess';
+import { CONTRACT_TYPE_LABELS } from '@/lib/types';
+
+// ============================================================================
+// TYPES
+// ============================================================================
+
+interface ExportData {
+  contracts: any[];
+  digital: any[];
+  physical: any[];
+  subscriptions: any[];
+  contacts: any[];
+}
+
+type ExportFormat = 'pdf' | 'csv' | 'json';
+
+// ============================================================================
+// MAIN EXPORT PAGE
+// ============================================================================
 
 export default function ExportPage() {
-  const [loading, setLoading] = useState(false)
-  const [selected, setSelected] = useState({
-    physical: true, digital: true, contracts: true, subscriptions: true, contacts: true,
-  })
+  const supabase = createClientComponentClient();
+  const { context } = useUserContext();
+  const { completeness } = useSectionStatus();
 
-  const cats = [
-    { key: 'physical', label: 'Physical Assets', icon: '🏢' },
-    { key: 'digital', label: 'Digital Assets', icon: '🌐' },
-    { key: 'contracts', label: 'Contracts', icon: '📄' },
-    { key: 'subscriptions', label: 'Subscriptions', icon: '💳' },
-    { key: 'contacts', label: 'Key Contacts', icon: '👥' },
-  ]
+  const [isLoading, setIsLoading] = useState(false);
+  const [exportData, setExportData] = useState<ExportData | null>(null);
+  const [selectedSections, setSelectedSections] = useState({
+    contracts: true,
+    digital: true,
+    physical: true,
+    subscriptions: true,
+    contacts: true,
+  });
+  const [includeInternalNotes, setIncludeInternalNotes] = useState(false);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>('pdf');
 
-  const handleExport = async () => {
-    setLoading(true)
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { setLoading(false); return }
+  const isReviewer = context?.isReviewer || false;
 
-    const tables: Record<string, string> = {
-      physical: 'physical_assets', digital: 'digital_assets',
-      contracts: 'contracts', subscriptions: 'subscriptions', contacts: 'contacts',
+  // Fetch all data for export
+  useEffect(() => {
+    async function fetchData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const userId = context?.isReviewer ? context.vaultOwnerId : user.id;
+
+      const [contracts, digital, physical, subscriptions, contacts] = await Promise.all([
+        supabase.from('contracts').select('*').eq('user_id', userId),
+        supabase.from('digital_assets').select('*').eq('user_id', userId),
+        supabase.from('physical_assets').select('*').eq('user_id', userId),
+        supabase.from('subscriptions').select('*').eq('user_id', userId),
+        supabase.from('contacts').select('*').eq('user_id', userId),
+      ]);
+
+      setExportData({
+        contracts: contracts.data || [],
+        digital: digital.data || [],
+        physical: physical.data || [],
+        subscriptions: subscriptions.data || [],
+        contacts: contacts.data || [],
+      });
     }
-    const data: Record<string, any[]> = {}
 
-    for (const [k, v] of Object.entries(selected)) {
-      if (v) {
-        const { data: items } = await supabase.from(tables[k]).select('*').eq('user_id', user.id)
-        data[k] = items || []
+    fetchData();
+  }, [supabase, context]);
+
+  // Generate PDF export
+  const generatePDF = async () => {
+    if (!exportData) return;
+
+    setIsLoading(true);
+
+    try {
+      // Build HTML content for PDF
+      const html = buildPDFContent(exportData, selectedSections, includeInternalNotes && !isReviewer);
+      
+      // Use browser print to PDF for now
+      // In production, use a proper PDF library like jsPDF or server-side generation
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(html);
+        printWindow.document.close();
+        printWindow.print();
       }
+    } catch (err) {
+      console.error('Export error:', err);
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const date = new Date().toLocaleDateString()
-    let html = `<!DOCTYPE html><html><head><title>Business Vault - ${date}</title>
-    <style>body{font-family:Arial,sans-serif;max-width:800px;margin:0 auto;padding:20px}
-    h1{color:#1e40af;border-bottom:2px solid #1e40af;padding-bottom:10px}
-    h2{color:#3b82f6;margin-top:30px}.item{background:#f9fafb;padding:15px;margin:10px 0;border-radius:8px;border-left:4px solid #3b82f6}
-    .item h3{margin:0 0 5px}.item p{margin:3px 0;color:#6b7280;font-size:14px}
-    .footer{margin-top:40px;padding-top:20px;border-top:1px solid #e5e7eb;color:#9ca3af;font-size:12px}</style>
-    </head><body><h1>Business Vault Report</h1><p>Generated: ${date}</p>`
+  // Generate CSV export
+  const generateCSV = async () => {
+    if (!exportData) return;
 
-    if (data.physical?.length) {
-      html += `<h2>🏢 Physical Assets (${data.physical.length})</h2>`
-      data.physical.forEach((i: any) => {
-        html += `<div class="item"><h3>${i.name}</h3><p>${i.category} • ${i.location}</p>
-        ${i.serial_number ? `<p>S/N: ${i.serial_number}</p>` : ''}${i.notes ? `<p>${i.notes}</p>` : ''}</div>`
-      })
-    }
-    if (data.digital?.length) {
-      html += `<h2>🌐 Digital Assets (${data.digital.length})</h2>`
-      data.digital.forEach((i: any) => {
-        html += `<div class="item"><h3>${i.name} (${i.type})</h3>
-        <p><strong>Credentials:</strong> ${i.credential_location}</p>
-        ${i.url ? `<p>${i.url}</p>` : ''}${i.expires ? `<p>Expires: ${i.expires}</p>` : ''}</div>`
-      })
-    }
-    if (data.contracts?.length) {
-      html += `<h2>📄 Contracts (${data.contracts.length})</h2>`
-      data.contracts.forEach((i: any) => {
-        html += `<div class="item"><h3>${i.name}</h3><p>${i.party} • ${i.type}</p>
-        <p>${i.start_date} - ${i.end_date || 'Ongoing'}</p>${i.notes ? `<p>${i.notes}</p>` : ''}</div>`
-      })
-    }
-    if (data.subscriptions?.length) {
-      html += `<h2>💳 Subscriptions (${data.subscriptions.length})</h2>`
-      data.subscriptions.forEach((i: any) => {
-        html += `<div class="item"><h3>${i.name}</h3><p>${i.provider} • $${i.cost}/${i.billing_cycle}</p>
-        <p><strong>Credentials:</strong> ${i.credential_location}</p></div>`
-      })
-    }
-    if (data.contacts?.length) {
-      html += `<h2>👥 Contacts (${data.contacts.length})</h2>`
-      data.contacts.forEach((i: any) => {
-        html += `<div class="item"><h3>${i.name}</h3><p>${i.role}${i.company ? ` at ${i.company}` : ''}</p>
-        ${i.email ? `<p>${i.email}</p>` : ''}${i.phone ? `<p>${i.phone}</p>` : ''}</div>`
-      })
-    }
+    setIsLoading(true);
 
-    html += `<div class="footer"><p>Confidential - Business Vault</p></div></body></html>`
-    const w = window.open('', '_blank')
-    if (w) { w.document.write(html); w.document.close() }
-    setLoading(false)
-  }
+    try {
+      const csvContent = buildCSVContent(exportData, selectedSections);
+      downloadFile(csvContent, 'deal-readiness-report.csv', 'text/csv');
+    } catch (err) {
+      console.error('Export error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Generate JSON export
+  const generateJSON = async () => {
+    if (!exportData) return;
+
+    setIsLoading(true);
+
+    try {
+      const filteredData: any = {};
+      if (selectedSections.contracts) filteredData.contracts = exportData.contracts;
+      if (selectedSections.digital) filteredData.digital = exportData.digital;
+      if (selectedSections.physical) filteredData.physical = exportData.physical;
+      if (selectedSections.subscriptions) filteredData.subscriptions = exportData.subscriptions;
+      if (selectedSections.contacts) filteredData.contacts = exportData.contacts;
+
+      // Remove internal notes if not included
+      if (!includeInternalNotes || isReviewer) {
+        Object.keys(filteredData).forEach(key => {
+          filteredData[key] = filteredData[key].map((item: any) => {
+            const { internal_notes, ...rest } = item;
+            return rest;
+          });
+        });
+      }
+
+      const jsonContent = JSON.stringify(filteredData, null, 2);
+      downloadFile(jsonContent, 'deal-readiness-report.json', 'application/json');
+    } catch (err) {
+      console.error('Export error:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExport = () => {
+    switch (exportFormat) {
+      case 'pdf': generatePDF(); break;
+      case 'csv': generateCSV(); break;
+      case 'json': generateJSON(); break;
+    }
+  };
+
+  const totalItems = exportData ? 
+    (selectedSections.contracts ? exportData.contracts.length : 0) +
+    (selectedSections.digital ? exportData.digital.length : 0) +
+    (selectedSections.physical ? exportData.physical.length : 0) +
+    (selectedSections.subscriptions ? exportData.subscriptions.length : 0) +
+    (selectedSections.contacts ? exportData.contacts.length : 0)
+    : 0;
 
   return (
-    <div>
+    <div className="p-6 lg:p-8 max-w-2xl mx-auto">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Export Report</h1>
-        <p className="text-gray-600 mt-1">Generate a printable PDF of your business assets</p>
+        <h1 className="text-2xl font-semibold text-white">Download Report</h1>
+        <p className="mt-1 text-zinc-400">
+          Generate a Deal Readiness Report for due diligence
+        </p>
       </div>
-      <div className="card mb-6">
-        <h2 className="text-xl font-semibold mb-4">Select Categories</h2>
-        <div className="space-y-3">
-          {cats.map((c) => (
-            <label key={c.key} className="flex items-center space-x-3 cursor-pointer">
-              <input type="checkbox" checked={selected[c.key as keyof typeof selected]}
-                onChange={(e) => setSelected({ ...selected, [c.key]: e.target.checked })}
-                className="w-5 h-5 rounded text-blue-600" />
-              <span className="text-xl">{c.icon}</span>
-              <span className="text-gray-700">{c.label}</span>
-            </label>
-          ))}
+
+      {/* Readiness Status */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+        <div className="flex items-center gap-4">
+          <div className="text-3xl">
+            {completeness.readinessLevel === 'Deal-Ready' ? '✓' : '📋'}
+          </div>
+          <div>
+            <h2 className="font-medium text-white">{completeness.readinessLevel}</h2>
+            <p className="text-sm text-zinc-400">
+              {completeness.completedSections} of {completeness.totalSections} sections complete
+            </p>
+          </div>
         </div>
       </div>
-      <button onClick={handleExport} disabled={loading} className="btn-primary text-lg px-8 py-3 disabled:opacity-50">
-        {loading ? 'Generating...' : '📥 Generate Report'}
-      </button>
-      <p className="text-gray-500 text-sm mt-4">
-        Report opens in a new window. Use your browser&apos;s Print function (Ctrl+P / Cmd+P) to save as PDF.
-      </p>
+
+      {/* Export Options */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+        <h2 className="text-lg font-medium text-white mb-4">Report Options</h2>
+
+        {/* Format Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-zinc-400 mb-3">Format</label>
+          <div className="flex gap-3">
+            {(['pdf', 'csv', 'json'] as const).map((format) => (
+              <button
+                key={format}
+                onClick={() => setExportFormat(format)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  exportFormat === format
+                    ? 'bg-amber-500 text-black'
+                    : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                }`}
+              >
+                {format.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Section Selection */}
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-zinc-400 mb-3">Include Sections</label>
+          <div className="space-y-2">
+            {[
+              { key: 'contracts', label: 'Contracts & Legal', count: exportData?.contracts.length || 0 },
+              { key: 'digital', label: 'Digital Infrastructure', count: exportData?.digital.length || 0 },
+              { key: 'physical', label: 'Physical Assets', count: exportData?.physical.length || 0 },
+              { key: 'subscriptions', label: 'Subscriptions', count: exportData?.subscriptions.length || 0 },
+              { key: 'contacts', label: 'Key Relationships', count: exportData?.contacts.length || 0 },
+            ].map((section) => (
+              <label key={section.key} className="flex items-center gap-3 p-2 hover:bg-zinc-800 rounded-lg cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedSections[section.key as keyof typeof selectedSections]}
+                  onChange={(e) => setSelectedSections({
+                    ...selectedSections,
+                    [section.key]: e.target.checked
+                  })}
+                  className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-amber-500 focus:ring-amber-500"
+                />
+                <span className="flex-1 text-white">{section.label}</span>
+                <span className="text-sm text-zinc-500">{section.count} items</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        {/* Internal Notes Toggle (owners only) */}
+        {!isReviewer && (
+          <div className="mb-6">
+            <label className="flex items-center gap-3 p-2 hover:bg-zinc-800 rounded-lg cursor-pointer">
+              <input
+                type="checkbox"
+                checked={includeInternalNotes}
+                onChange={(e) => setIncludeInternalNotes(e.target.checked)}
+                className="w-4 h-4 rounded border-zinc-600 bg-zinc-800 text-amber-500 focus:ring-amber-500"
+              />
+              <div>
+                <span className="text-white">Include Internal Notes</span>
+                <p className="text-xs text-zinc-500">Private notes will be visible in the export</p>
+              </div>
+            </label>
+          </div>
+        )}
+
+        {/* Summary */}
+        <div className="p-4 bg-zinc-800/50 rounded-lg mb-6">
+          <p className="text-sm text-zinc-400">
+            Your report will include <span className="text-white font-medium">{totalItems} items</span> across {Object.values(selectedSections).filter(Boolean).length} sections.
+          </p>
+        </div>
+
+        {/* Export Button */}
+        <button
+          onClick={handleExport}
+          disabled={isLoading || totalItems === 0}
+          className="w-full px-4 py-3 bg-amber-500 text-black font-medium rounded-lg hover:bg-amber-400 transition-colors disabled:opacity-50"
+        >
+          {isLoading ? 'Generating...' : `Download ${exportFormat.toUpperCase()} Report`}
+        </button>
+      </div>
+
+      {/* Use Cases */}
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <h3 className="text-sm font-medium text-zinc-400 mb-4">Common Use Cases</h3>
+        <div className="space-y-3 text-sm text-zinc-500">
+          <div className="flex items-start gap-3">
+            <span>📋</span>
+            <span>Share with business brokers during listing process</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span>🤝</span>
+            <span>Provide to buyers during due diligence</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span>📁</span>
+            <span>Archive for business continuity planning</span>
+          </div>
+          <div className="flex items-start gap-3">
+            <span>🔒</span>
+            <span>Secure backup of critical business information</span>
+          </div>
+        </div>
+      </div>
     </div>
-  )
+  );
+}
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+function downloadFile(content: string, filename: string, mimeType: string) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function buildPDFContent(
+  data: ExportData, 
+  sections: Record<string, boolean>,
+  includeNotes: boolean
+): string {
+  const date = new Date().toLocaleDateString('en-US', { 
+    year: 'numeric', month: 'long', day: 'numeric' 
+  });
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>Deal Readiness Report</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 40px; color: #1a1a1a; }
+        h1 { font-size: 24px; margin-bottom: 8px; }
+        h2 { font-size: 18px; margin-top: 32px; margin-bottom: 16px; border-bottom: 2px solid #f59e0b; padding-bottom: 8px; }
+        .subtitle { color: #666; margin-bottom: 24px; }
+        .item { margin-bottom: 16px; padding: 12px; background: #f9f9f9; border-radius: 8px; }
+        .item-name { font-weight: 600; }
+        .item-detail { font-size: 14px; color: #666; margin-top: 4px; }
+        .footer { margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #999; }
+        @media print { body { padding: 20px; } }
+      </style>
+    </head>
+    <body>
+      <h1>Deal Readiness Report</h1>
+      <p class="subtitle">Generated on ${date}</p>
+
+      ${sections.contracts && data.contracts.length > 0 ? `
+        <h2>Contracts & Legal (${data.contracts.length})</h2>
+        ${data.contracts.map(c => `
+          <div class="item">
+            <div class="item-name">${c.name}</div>
+            <div class="item-detail">Type: ${CONTRACT_TYPE_LABELS[c.type as keyof typeof CONTRACT_TYPE_LABELS] || c.type}</div>
+            ${c.counterparty ? `<div class="item-detail">Party: ${c.counterparty}</div>` : ''}
+            ${c.expiration_date ? `<div class="item-detail">Expires: ${new Date(c.expiration_date).toLocaleDateString()}</div>` : ''}
+            ${c.document_location ? `<div class="item-detail">Location: ${c.document_location}</div>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      ${sections.digital && data.digital.length > 0 ? `
+        <h2>Digital Infrastructure (${data.digital.length})</h2>
+        ${data.digital.map(d => `
+          <div class="item">
+            <div class="item-name">${d.name}</div>
+            <div class="item-detail">Type: ${d.type}</div>
+            ${d.provider ? `<div class="item-detail">Provider: ${d.provider}</div>` : ''}
+            ${d.expiration_date ? `<div class="item-detail">Expires: ${new Date(d.expiration_date).toLocaleDateString()}</div>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      ${sections.physical && data.physical.length > 0 ? `
+        <h2>Physical Assets (${data.physical.length})</h2>
+        ${data.physical.map(p => `
+          <div class="item">
+            <div class="item-name">${p.name}</div>
+            <div class="item-detail">Type: ${p.type}</div>
+            ${p.location ? `<div class="item-detail">Location: ${p.location}</div>` : ''}
+            ${p.serial_number ? `<div class="item-detail">Serial: ${p.serial_number}</div>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      ${sections.subscriptions && data.subscriptions.length > 0 ? `
+        <h2>Subscriptions (${data.subscriptions.length})</h2>
+        ${data.subscriptions.map(s => `
+          <div class="item">
+            <div class="item-name">${s.name}</div>
+            <div class="item-detail">Provider: ${s.provider}</div>
+            ${s.monthly_cost ? `<div class="item-detail">Cost: $${s.monthly_cost}/mo</div>` : ''}
+            ${s.renewal_date ? `<div class="item-detail">Renews: ${new Date(s.renewal_date).toLocaleDateString()}</div>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      ${sections.contacts && data.contacts.length > 0 ? `
+        <h2>Key Relationships (${data.contacts.length})</h2>
+        ${data.contacts.map(c => `
+          <div class="item">
+            <div class="item-name">${c.name}</div>
+            <div class="item-detail">Role: ${c.role}</div>
+            ${c.organization ? `<div class="item-detail">Organization: ${c.organization}</div>` : ''}
+            ${c.email ? `<div class="item-detail">Email: ${c.email}</div>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      <div class="footer">
+        <p>This report was generated by Deal-Ready Vault (businessvault.io)</p>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function buildCSVContent(data: ExportData, sections: Record<string, boolean>): string {
+  let csv = 'Section,Name,Type,Details,Expiration\n';
+
+  if (sections.contracts) {
+    data.contracts.forEach(c => {
+      csv += `"Contracts","${c.name}","${c.type}","${c.counterparty || ''}","${c.expiration_date || ''}"\n`;
+    });
+  }
+  if (sections.digital) {
+    data.digital.forEach(d => {
+      csv += `"Digital","${d.name}","${d.type}","${d.provider || ''}","${d.expiration_date || ''}"\n`;
+    });
+  }
+  if (sections.physical) {
+    data.physical.forEach(p => {
+      csv += `"Physical","${p.name}","${p.type}","${p.location || ''}",""\n`;
+    });
+  }
+  if (sections.subscriptions) {
+    data.subscriptions.forEach(s => {
+      csv += `"Subscriptions","${s.name}","${s.provider}","$${s.monthly_cost || 0}/mo","${s.renewal_date || ''}"\n`;
+    });
+  }
+  if (sections.contacts) {
+    data.contacts.forEach(c => {
+      csv += `"Contacts","${c.name}","${c.role}","${c.organization || ''}",""\n`;
+    });
+  }
+
+  return csv;
 }
