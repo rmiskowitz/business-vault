@@ -203,6 +203,7 @@ export interface Contact {
   id: string;
   user_id: string;
   name: string;
+  company?: string;
   organization?: string;
   role: string;
   email?: string;
