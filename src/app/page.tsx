@@ -52,6 +52,27 @@ export default function Home() {
     return 'text-emerald-500';
   };
 
+  const getStatusBgColor = () => {
+    const count = checkedItems.size;
+    if (count <= 1) return 'bg-red-500';
+    if (count <= 3) return 'bg-amber-500';
+    return 'bg-emerald-500';
+  };
+
+  const getStatusBorderColor = () => {
+    const count = checkedItems.size;
+    if (count <= 1) return 'border-red-500/30';
+    if (count <= 3) return 'border-amber-500/30';
+    return 'border-emerald-500/30';
+  };
+
+  const getStatusBgLight = () => {
+    const count = checkedItems.size;
+    if (count <= 1) return 'bg-red-500/10';
+    if (count <= 3) return 'bg-amber-500/10';
+    return 'bg-emerald-500/10';
+  };
+
   const getStatusText = () => {
     const count = checkedItems.size;
     if (count === 0) return 'At Risk';
@@ -278,9 +299,15 @@ export default function Home() {
           </p>
 
           <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-8">
-            <p className="text-zinc-400 text-sm mb-6 text-center">
-              Click each item you can confidently say yes to.
-            </p>
+            {/* Traffic Light Indicator */}
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="text-zinc-500 text-sm">Click →</div>
+              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center transition-all duration-300 ${getStatusBgLight()} border ${getStatusBorderColor()}`}>
+                <div className={`w-8 h-8 rounded-full transition-all duration-300 ${getStatusBgColor()} shadow-lg`} 
+                     style={{ boxShadow: `0 0 20px ${checkedItems.size <= 1 ? 'rgba(239,68,68,0.5)' : checkedItems.size <= 3 ? 'rgba(245,158,11,0.5)' : 'rgba(16,185,129,0.5)'}` }}>
+                </div>
+              </div>
+            </div>
 
             <div className="space-y-4">
               {checklistItems.map((item, index) => (
@@ -319,11 +346,15 @@ export default function Home() {
               ))}
             </div>
 
-            <div className="mt-8 pt-6 border-t border-zinc-800">
+            {/* Results Section with Traffic Light Status */}
+            <div className={`mt-8 pt-6 border-t border-zinc-800 rounded-xl transition-all duration-300`}>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-zinc-400">
-                  {checkedItems.size} of 5
-                </span>
+                <div className="flex items-center gap-3">
+                  <div className={`w-4 h-4 rounded-full ${getStatusBgColor()}`}></div>
+                  <span className="text-zinc-400">
+                    {checkedItems.size} of 5
+                  </span>
+                </div>
                 <span className={`font-bold text-lg ${getStatusColor()}`}>
                   {getStatusText()}
                 </span>
