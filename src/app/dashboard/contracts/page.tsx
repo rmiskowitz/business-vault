@@ -1,48 +1,17 @@
+
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import { useUserContext, useDeleteConfirmation, useSectionStatus } from '@/lib/hooks/useVaultAccess'
-import { ContractType, CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CATEGORIES, SECTIONS } from '@/lib/types'
-
-function DeleteModal({ isOpen, onClose, onConfirm, itemName, hasReviewers }: {
-  isOpen: boolean
-  onClose: () => void
-  onConfirm: () => void
-  itemName: string
-  hasReviewers: boolean
-}) {
-  if (!isOpen) return null
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-6 max-w-md w-full">
-        <h3 className="text-lg font-medium text-white mb-2">Delete Document</h3>
-        <p className="text-[#a1a1aa] mb-4">Are you sure you want to delete "{itemName}"?</p>
-        {hasReviewers && (
-          <div className="mb-4 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-            <p className="text-sm text-yellow-400">A broker or buyer has access to your vault.</p>
-          </div>
-        )}
-        <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 px-4 py-2 bg-[#18181b] text-[#a1a1aa] rounded-lg hover:bg-[#27272a]">Cancel</button>
-          <button onClick={onConfirm} className="flex-1 px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600">Delete</button>
-        </div>
-      </div>
-    </div>
-  )
-}
+import { ContractType, CONTRACT_TYPE_LABELS, CONTRACT_TYPE_CATEGORIES } from '@/lib/types'
 
 export default function ContractsPage() {
-  const { context } = useUserContext()
-  const { hasActiveReviewers } = useDeleteConfirmation()
-  const { updateSectionStatus } = useSectionStatus()
-
   const [contracts, setContracts] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
-  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; contract: any | null }>({ isOpen: false, contract: null })
+  const [deleteId, setDeleteId] = useState<string | null>(null)
   const [filter, setFilter] = useState<'all' | 'contracts' | 'ownership' | 'financial'>('all')
 
   const [formData, setFormData] = useState({
@@ -51,14 +20,9 @@ export default function ContractsPage() {
     counterparty: '',
     effective_date: '',
     expiration_date: '',
-    renewal_terms: '',
     document_location: '',
     key_terms: '',
-    monthly_cost: '',
-    internal_notes: ''
   })
-
-  const isReviewer = context?.isReviewer || false
 
   const fetchContracts = useCallback(async () => {
     try {
@@ -74,23 +38,17 @@ export default function ContractsPage() {
       
       if (error) throw error
       setContracts(data || [])
-      
-      if (!isReviewer) {
-        const count = data?.length || 0
-        const status = count === 0 ? 'not_started' : count >= 5 ? 'complete' : 'in_progress'
-        await updateSectionStatus(SECTIONS.CONTRACTS_LEGAL, status, count)
-      }
     } catch (err) {
       console.error('Error:', err)
     } finally {
       setIsLoading(false)
     }
-  }, [isReviewer, updateSectionStatus])
+  }, [])
 
   useEffect(() => { fetchContracts() }, [fetchContracts])
 
   const resetForm = () => {
-    setFormData({ name: '', type: 'other_contract', counterparty: '', effective_date: '', expiration_date: '', renewal_terms: '', document_location: '', key_terms: '', monthly_cost: '', internal_notes: '' })
+    setFormData({ name: '', type: 'other_contract', counterparty: '', effective_date: '', expiration_date: '', document_location: '', key_terms: '' })
     setEditingId(null)
     setShowForm(false)
   }
@@ -109,11 +67,8 @@ export default function ContractsPage() {
         counterparty: formData.counterparty || null,
         effective_date: formData.effective_date || null,
         expiration_date: formData.expiration_date || null,
-        renewal_terms: formData.renewal_terms || null,
         document_location: formData.document_location || null,
         key_terms: formData.key_terms || null,
-        monthly_cost: formData.monthly_cost ? parseFloat(formData.monthly_cost) : null,
-        internal_notes: formData.internal_notes || null,
       }
 
       if (editingId) {
@@ -138,20 +93,16 @@ export default function ContractsPage() {
       counterparty: contract.counterparty || '',
       effective_date: contract.effective_date || '',
       expiration_date: contract.expiration_date || '',
-      renewal_terms: contract.renewal_terms || '',
       document_location: contract.document_location || '',
       key_terms: contract.key_terms || '',
-      monthly_cost: contract.monthly_cost?.toString() || '',
-      internal_notes: contract.internal_notes || ''
     })
     setEditingId(contract.id)
     setShowForm(true)
   }
 
-  const handleDelete = async () => {
-    if (!deleteModal.contract) return
-    await supabase.from('contracts').delete().eq('id', deleteModal.contract.id)
-    setDeleteModal({ isOpen: false, contract: null })
+  const handleDelete = async (id: string) => {
+    await supabase.from('contracts').delete().eq('id', id)
+    setDeleteId(null)
     await fetchContracts()
   }
 
@@ -163,9 +114,6 @@ export default function ContractsPage() {
     return true
   })
 
-  const isFinancial = CONTRACT_TYPE_CATEGORIES.financial.includes(formData.type)
-  const isContract = CONTRACT_TYPE_CATEGORIES.contracts.includes(formData.type)
-
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex items-start justify-between gap-4 mb-8">
@@ -173,7 +121,7 @@ export default function ContractsPage() {
           <h1 className="text-2xl font-semibold text-white">Contracts & Legal</h1>
           <p className="mt-1 text-[#71717a]">Document contracts, ownership, and financial records</p>
         </div>
-        {!isReviewer && !showForm && (
+        {!showForm && (
           <button onClick={() => setShowForm(true)} className="flex items-center gap-2 px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]">
             <span>+</span><span>Document Item</span>
           </button>
@@ -196,12 +144,12 @@ export default function ContractsPage() {
           
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Document Name *</label>
-            <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
+            <input type="text" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none" />
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Document Type</label>
-            <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as ContractType })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white">
+            <select value={formData.type} onChange={(e) => setFormData({ ...formData, type: e.target.value as ContractType })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none">
               <optgroup label="Contracts">
                 {CONTRACT_TYPE_CATEGORIES.contracts.map((type) => (<option key={type} value={type}>{CONTRACT_TYPE_LABELS[type as ContractType]}</option>))}
               </optgroup>
@@ -214,34 +162,30 @@ export default function ContractsPage() {
             </select>
           </div>
 
-          {isContract && (
-            <div>
-              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Counterparty</label>
-              <input type="text" value={formData.counterparty} onChange={(e) => setFormData({ ...formData, counterparty: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
-            </div>
-          )}
+          <div>
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Counterparty</label>
+            <input type="text" value={formData.counterparty} onChange={(e) => setFormData({ ...formData, counterparty: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none" />
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">{isFinancial ? 'Document Date' : 'Effective Date'}</label>
-              <input type="date" value={formData.effective_date} onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
+              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Effective Date</label>
+              <input type="date" value={formData.effective_date} onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none" />
             </div>
-            {!isFinancial && (
-              <div>
-                <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Expiration Date</label>
-                <input type="date" value={formData.expiration_date} onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
-              </div>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Expiration Date</label>
+              <input type="date" value={formData.expiration_date} onChange={(e) => setFormData({ ...formData, expiration_date: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white focus:border-[#f59e0b] outline-none" />
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Document Location</label>
-            <input type="text" value={formData.document_location} onChange={(e) => setFormData({ ...formData, document_location: e.target.value })} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white" />
+            <input type="text" value={formData.document_location} onChange={(e) => setFormData({ ...formData, document_location: e.target.value })} placeholder="e.g., Google Drive > Contracts folder" className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none" />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">{isFinancial ? 'Key Figures' : 'Key Terms'}</label>
-            <textarea value={formData.key_terms} onChange={(e) => setFormData({ ...formData, key_terms: e.target.value })} rows={3} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white resize-none" />
+            <label className="block text-sm font-medium text-[#a1a1aa] mb-2">Key Terms</label>
+            <textarea value={formData.key_terms} onChange={(e) => setFormData({ ...formData, key_terms: e.target.value })} rows={3} className="w-full px-3 py-2 bg-[#18181b] border border-[#27272a] rounded-lg text-white placeholder-[#52525b] focus:border-[#f59e0b] outline-none resize-none" />
           </div>
 
           <div className="flex gap-3 pt-2">
@@ -260,7 +204,7 @@ export default function ContractsPage() {
               <div className="text-4xl mb-4">📄</div>
               <h3 className="text-lg font-medium text-white mb-2">Nothing documented yet</h3>
               <p className="text-[#71717a] mb-6">Start by documenting your contracts and legal documents.</p>
-              {!isReviewer && <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]">Document Your First Item</button>}
+              <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-[#f59e0b] text-black font-medium rounded-lg hover:bg-[#d97706]">Document Your First Item</button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -270,14 +214,13 @@ export default function ContractsPage() {
                     <div>
                       <h3 className="font-medium text-white">{contract.name}</h3>
                       <p className="text-sm text-[#71717a]">{CONTRACT_TYPE_LABELS[contract.type as ContractType] || contract.type}</p>
+                      {contract.counterparty && <p className="text-sm text-[#52525b]">Party: {contract.counterparty}</p>}
                       {contract.expiration_date && <p className="text-sm text-[#52525b]">Expires: {new Date(contract.expiration_date).toLocaleDateString()}</p>}
                     </div>
-                    {!isReviewer && (
-                      <div className="flex gap-2">
-                        <button onClick={() => handleEdit(contract)} className="p-2 text-[#71717a] hover:text-white">✏️</button>
-                        <button onClick={() => setDeleteModal({ isOpen: true, contract })} className="p-2 text-[#71717a] hover:text-red-400">🗑️</button>
-                      </div>
-                    )}
+                    <div className="flex gap-2">
+                      <button onClick={() => handleEdit(contract)} className="p-2 text-[#71717a] hover:text-white">✏️</button>
+                      <button onClick={() => setDeleteId(contract.id)} className="p-2 text-[#71717a] hover:text-red-400">🗑️</button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -286,7 +229,18 @@ export default function ContractsPage() {
         </>
       )}
 
-      <DeleteModal isOpen={deleteModal.isOpen} onClose={() => setDeleteModal({ isOpen: false, contract: null })} onConfirm={handleDelete} itemName={deleteModal.contract?.name || ''} hasReviewers={hasActiveReviewers} />
+      {deleteId && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-[#0f0f12] border border-[#1e1e23] rounded-xl p-6 max-w-md w-full">
+            <h3 className="text-lg font-medium text-white mb-2">Delete Document</h3>
+            <p className="text-[#a1a1aa] mb-4">Are you sure you want to delete this document?</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteId(null)} className="flex-1 px-4 py-2 bg-[#18181b] text-[#a1a1aa] rounded-lg hover:bg-[#27272a]">Cancel</button>
+              <button onClick={() => handleDelete(deleteId)} className="flex-1 px-4 py-2 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600">Delete</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
