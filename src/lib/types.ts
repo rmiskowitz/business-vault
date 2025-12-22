@@ -194,3 +194,83 @@ export const CONTRACT_TYPE_CATEGORIES = {
     'accounts_payable',
   ],
 } as const;
+
+// ============================================================================
+// ASSET TYPES
+// ============================================================================
+
+export interface Contact {
+  id: string;
+  user_id: string;
+  name: string;
+  organization?: string;
+  role: string;
+  email?: string;
+  phone?: string;
+  responsibility?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DigitalAsset {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  provider?: string;
+  url?: string;
+  username?: string;
+  credential_location?: string;
+  expiration_date?: string;
+  monthly_cost?: number;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PhysicalAsset {
+  id: string;
+  user_id: string;
+  name: string;
+  type: string;
+  serial_number?: string;
+  purchase_date?: string;
+  purchase_price?: number;
+  location?: string;
+  condition?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  name: string;
+  provider: string;
+  monthly_cost?: number;
+  billing_cycle?: string;
+  renewal_date?: string;
+  credential_location?: string;
+  notes?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Contract {
+  id: string;
+  user_id: string;
+  name: string;
+  type: ContractType;
+  counterparty?: string;
+  effective_date?: string;
+  expiration_date?: string;
+  renewal_terms?: string;
+  document_location?: string;
+  key_terms?: string;
+  monthly_cost?: number;
+  internal_notes?: string;
+  created_at: string;
+  updated_at: string;
+}
