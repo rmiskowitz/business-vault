@@ -79,7 +79,34 @@ export default function BrokersPage() {
     }
   ];
 
+<<<<<<< HEAD
   const features = [
+=======
+  const featureCategories = [
+    {
+      title: 'Digital Assets & Access',
+      items: ['Domains', 'Hosting', 'Email', 'Payment processors', 'Social accounts', 'Admin credentials'],
+    },
+    {
+      title: 'Contracts & Obligations',
+      items: ['Vendor agreements', 'Leases', 'Insurance policies', 'Warranties'],
+    },
+    {
+      title: 'Subscriptions & Recurring Spend',
+      items: ['SaaS tools', 'Services', 'Renewals', 'Monthly commitments'],
+    },
+    {
+      title: 'Physical Assets',
+      items: ['Equipment', 'Vehicles', 'Inventory', 'Serial numbers', 'Purchase records'],
+    },
+    {
+      title: 'Key Relationships',
+      items: ['Vendors', 'Advisors', 'Partners', 'Operational contacts'],
+    },
+  ];
+
+  const pricingTiers = [
+>>>>>>> parent of b378ece (Update page.tsx)
     {
       title: 'White-Label Reports',
       description: 'Export branded due diligence packages with your logo and contact info.',
@@ -212,11 +239,19 @@ export default function BrokersPage() {
             </div>
             
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-6">
+<<<<<<< HEAD
               Stop losing deals to{' '}
               <span className="text-amber-500">documentation chaos.</span>
             </h1>
             <p className="text-lg sm:text-xl text-zinc-400 mb-8 max-w-2xl mx-auto">
               Business Vault gives your sellers a system to document what buyers need — before diligence starts. Faster closes. Fewer surprises. Better outcomes.
+=======
+              Get your business deal-ready{' '}
+              <span className="text-amber-500">before due diligence starts.</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-zinc-400 mb-8 max-w-2xl">
+              Business Vault organizes the assets buyers ask for — digital access, contracts, subscriptions, physical assets, and key relationships — so your sale doesn't stall, drag, or fall apart.
+>>>>>>> parent of b378ece (Update page.tsx)
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -348,6 +383,7 @@ export default function BrokersPage() {
       <section className="py-16 sm:py-20 px-4 sm:px-6 bg-zinc-900/50">
         <div className="max-w-7xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
+<<<<<<< HEAD
             You've seen it happen.{' '}
             <span className="text-red-500">Every broker has.</span>
           </h2>
@@ -361,6 +397,177 @@ export default function BrokersPage() {
                 <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">{point.icon}</div>
                 <h3 className="text-lg font-bold text-zinc-100 mb-2">{point.title}</h3>
                 <p className="text-zinc-400 text-sm">{point.description}</p>
+=======
+            What happens when you're{' '}
+            <span className="text-amber-500">not ready.</span>
+          </h2>
+          <p className="text-zinc-400 text-center mb-10 sm:mb-16 text-base sm:text-lg max-w-2xl mx-auto">
+            You don't think about your documentation — until it costs you the deal.
+          </p>
+
+          {/* Featured Story Card */}
+          <div className="mb-6 sm:mb-8">
+            <div className="bg-zinc-900 rounded-2xl border-2 border-amber-500/30 overflow-hidden hover:border-amber-500/50 transition-colors">
+              <div className="grid md:grid-cols-2">
+                <div className="aspect-video md:aspect-auto bg-zinc-800 relative">
+                  <img
+                    src={storyCards[0].image}
+                    alt={storyCards[0].title}
+                    className="w-full h-full object-cover opacity-70"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-r from-zinc-900/80 via-transparent to-transparent md:bg-gradient-to-t"></div>
+                  <div className="absolute top-4 left-4">
+                    <span className="bg-amber-500 text-zinc-950 text-xs font-bold px-2 py-1 rounded">
+                      #1 Deal Killer
+                    </span>
+                  </div>
+                </div>
+                <div className="p-6 sm:p-8 flex flex-col justify-center">
+                  <h3 className="text-xl sm:text-2xl font-bold mb-3 text-zinc-100">{storyCards[0].title}</h3>
+                  <p className="text-zinc-400 text-base sm:text-lg leading-relaxed">{storyCards[0].description}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Other Story Cards */}
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
+            {storyCards.slice(1).map((card, index) => (
+              <div
+                key={index}
+                className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden hover:border-zinc-700 transition-colors"
+              >
+                <div className="aspect-video bg-zinc-800 relative">
+                  <img
+                    src={card.image}
+                    alt={card.title}
+                    className="w-full h-full object-cover opacity-60"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent"></div>
+                </div>
+                <div className="p-4 sm:p-5">
+                  <h3 className="text-lg font-bold mb-2 text-zinc-100">{card.title}</h3>
+                  <p className="text-zinc-400 text-sm">{card.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" className="py-16 sm:py-20 px-4 sm:px-6 bg-zinc-900/50">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
+            What buyers ask for in due diligence
+          </h2>
+          <p className="text-zinc-400 text-center mb-10 sm:mb-16 text-base sm:text-lg max-w-2xl mx-auto">
+            Business Vault organizes your business the way buyers and brokers expect to see it.
+          </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
+            {featureCategories.map((category, index) => (
+              <div
+                key={index}
+                className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 sm:p-6 hover:border-amber-500/30 transition-colors group"
+              >
+                <h3 className="font-bold text-amber-500 mb-3 sm:mb-4 text-sm sm:text-base group-hover:text-amber-400 transition-colors">{category.title}</h3>
+                <ul className="space-y-1.5 sm:space-y-2">
+                  {category.items.map((item, itemIndex) => (
+                    <li key={itemIndex} className="text-zinc-400 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
+                      <span className="text-emerald-500 text-xs">✓</span>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+
+          <p className="text-center mt-8 sm:mt-12 text-base sm:text-xl text-zinc-300 italic">
+            Everything in one place. Clean. Transferable. Buyer-ready.
+          </p>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-16 sm:py-20 px-4 sm:px-6">
+        <div className="max-w-7xl mx-auto">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
+            Simple Pricing. Start Free.
+          </h2>
+          <p className="text-zinc-400 text-center mb-6 sm:mb-8 text-base sm:text-lg">
+            Document your first 5 assets at no cost. Upgrade when you're ready.
+          </p>
+
+          {/* Billing Toggle */}
+          <div className="flex items-center justify-center gap-2 sm:gap-4 mb-8 sm:mb-12">
+            <button
+              onClick={() => setBillingCycle('monthly')}
+              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                billingCycle === 'monthly'
+                  ? 'bg-amber-500 text-zinc-950'
+                  : 'text-zinc-400 hover:text-zinc-100'
+              }`}
+            >
+              Monthly
+            </button>
+            <button
+              onClick={() => setBillingCycle('annual')}
+              className={`px-3 sm:px-4 py-2 rounded-lg transition-colors text-sm sm:text-base ${
+                billingCycle === 'annual'
+                  ? 'bg-amber-500 text-zinc-950'
+                  : 'text-zinc-400 hover:text-zinc-100'
+              }`}
+            >
+              Annual (Save 20%)
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {pricingTiers.map((tier, index) => (
+              <div
+                key={index}
+                className={`rounded-2xl border p-5 sm:p-6 relative ${
+                  tier.highlighted
+                    ? 'bg-amber-500/10 border-amber-500'
+                    : 'bg-zinc-900 border-zinc-800'
+                }`}
+              >
+                {tier.highlighted && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-amber-500 text-zinc-950 text-xs font-bold px-3 py-1 rounded-full">
+                    Most Popular
+                  </div>
+                )}
+                <div className="text-zinc-400 text-xs sm:text-sm mb-1">{tier.label}</div>
+                <h3 className="text-lg sm:text-xl font-bold mb-3 sm:mb-4">{tier.name}</h3>
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-3xl sm:text-4xl font-bold">{tier.price}</span>
+                  <span className="text-zinc-400 text-sm sm:text-base">{tier.period}</span>
+                </div>
+                <ul className="space-y-2 sm:space-y-3 mb-4 sm:mb-6">
+                  {tier.features.map((feature, featureIndex) => (
+                    <li key={featureIndex} className="flex items-center gap-2 text-xs sm:text-sm">
+                      <span className={feature.includes('Coming Soon') ? 'text-zinc-500' : 'text-emerald-500'}>
+                        {feature.includes('Coming Soon') ? '◦' : '✓'}
+                      </span>
+                      <span className={feature.includes('Coming Soon') ? 'text-zinc-500' : 'text-zinc-300'}>
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                <Link
+                  href={tier.href}
+                  className={`block w-full py-2.5 sm:py-3 rounded-lg font-semibold text-center transition-colors text-sm sm:text-base ${
+                    tier.highlighted
+                      ? 'bg-amber-500 hover:bg-amber-400 text-zinc-950'
+                      : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-100'
+                  }`}
+                >
+                  {tier.cta}
+                </Link>
+>>>>>>> parent of b378ece (Update page.tsx)
               </div>
             ))}
           </div>
