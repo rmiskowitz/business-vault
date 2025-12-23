@@ -110,29 +110,6 @@ export default function Home() {
     },
   ];
 
-  const featureCategories = [
-    {
-      title: 'Digital Assets & Access',
-      items: ['Domains', 'Hosting', 'Email', 'Payment processors', 'Social accounts', 'Admin credentials'],
-    },
-    {
-      title: 'Contracts & Obligations',
-      items: ['Vendor agreements', 'Leases', 'Insurance policies', 'Warranties'],
-    },
-    {
-      title: 'Subscriptions & Recurring Spend',
-      items: ['SaaS tools', 'Services', 'Renewals', 'Monthly commitments'],
-    },
-    {
-      title: 'Physical Assets',
-      items: ['Equipment', 'Vehicles', 'Inventory', 'Serial numbers', 'Purchase records'],
-    },
-    {
-      title: 'Key Relationships',
-      items: ['Vendors', 'Advisors', 'Partners', 'Operational contacts'],
-    },
-  ];
-
   const pricingTiers = [
     {
       label: 'Getting Started',
@@ -272,11 +249,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto">
           <div className="max-w-4xl">
             <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold leading-tight mb-6">
-              Get your business deal-ready{' '}
-              <span className="text-amber-500">before due diligence starts.</span>
+              Get Your Business Deal-Ready{' '}
+              <span className="text-amber-500">Before Due Diligence Starts</span>
             </h1>
             <p className="text-lg sm:text-xl text-zinc-400 mb-8 max-w-2xl">
-              Business Vault organizes the assets buyers ask for — digital access, contracts, subscriptions, physical assets, and key relationships — so your sale doesn't stall, drag, or fall apart.
+              Business Vault organizes the exact assets buyers need — contracts, financial and legal records, digital access, subscriptions, physical assets, and key relationships — so deals move faster and don't stall, drag, or collapse under scrutiny.
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
@@ -641,38 +618,90 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* Due Diligence Reality Section */}
       <section id="features" className="py-16 sm:py-20 px-4 sm:px-6 bg-zinc-900/50">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center mb-4">
-            What buyers ask for in due diligence
+            The gap between what buyers need{' '}
+            <span className="text-amber-500">and what sellers have.</span>
           </h2>
-          <p className="text-zinc-400 text-center mb-10 sm:mb-16 text-base sm:text-lg max-w-2xl mx-auto">
-            Business Vault organizes your business the way buyers and brokers expect to see it.
+          <p className="text-zinc-400 text-center mb-12 sm:mb-16 text-base sm:text-lg max-w-2xl mx-auto">
+            This is where deals slow down, get renegotiated, or fall apart.
           </p>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-6">
-            {featureCategories.map((category, index) => (
-              <div
-                key={index}
-                className="bg-zinc-900 rounded-xl border border-zinc-800 p-4 sm:p-6 hover:border-amber-500/30 transition-colors group"
-              >
-                <h3 className="font-bold text-amber-500 mb-3 sm:mb-4 text-sm sm:text-base group-hover:text-amber-400 transition-colors">{category.title}</h3>
-                <ul className="space-y-1.5 sm:space-y-2">
-                  {category.items.map((item, itemIndex) => (
-                    <li key={itemIndex} className="text-zinc-400 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2">
-                      <span className="text-emerald-500 text-xs">✓</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+          {/* Two Column Comparison */}
+          <div className="grid md:grid-cols-2 gap-6 sm:gap-8">
+            
+            {/* Left Column - What Buyers Need */}
+            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                <h3 className="text-lg sm:text-xl font-bold text-zinc-100">What Buyers Need</h3>
               </div>
-            ))}
+              <ul className="space-y-4">
+                <li className="text-zinc-300 text-sm sm:text-base">
+                  Signed contracts and agreements
+                </li>
+                <li className="text-zinc-300 text-sm sm:text-base">
+                  Financial and legal records
+                </li>
+                <li className="text-zinc-300 text-sm sm:text-base">
+                  Proof of digital ownership and access
+                </li>
+                <li className="text-zinc-300 text-sm sm:text-base">
+                  Active subscriptions and systems
+                </li>
+                <li className="text-zinc-300 text-sm sm:text-base">
+                  Physical asset inventory
+                </li>
+                <li className="text-zinc-300 text-sm sm:text-base">
+                  Key relationships and dependencies
+                </li>
+              </ul>
+            </div>
+
+            {/* Right Column - What Sellers Usually Have */}
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 sm:p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-3 h-3 rounded-full bg-amber-500"></div>
+                <h3 className="text-lg sm:text-xl font-bold text-zinc-400">What Sellers Usually Have</h3>
+              </div>
+              <ul className="space-y-4">
+                <li className="text-zinc-500 text-sm sm:text-base">
+                  Files scattered across drives and inboxes
+                </li>
+                <li className="text-zinc-500 text-sm sm:text-base">
+                  Passwords tied to individuals
+                </li>
+                <li className="text-zinc-500 text-sm sm:text-base">
+                  Subscriptions no one fully tracks
+                </li>
+                <li className="text-zinc-500 text-sm sm:text-base">
+                  Outdated or incomplete asset lists
+                </li>
+                <li className="text-zinc-500 text-sm sm:text-base">
+                  Critical relationships undocumented
+                </li>
+                <li className="text-zinc-500 text-sm sm:text-base italic">
+                  &nbsp;
+                </li>
+              </ul>
+            </div>
+
           </div>
 
-          <p className="text-center mt-8 sm:mt-12 text-base sm:text-xl text-zinc-300 italic">
-            Everything in one place. Clean. Transferable. Buyer-ready.
-          </p>
+          {/* Bridge Statement */}
+          <div className="mt-10 sm:mt-12 text-center">
+            <p className="text-zinc-300 text-base sm:text-lg mb-6">
+              Business Vault closes this gap — before buyers ever ask.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-block bg-amber-500 hover:bg-amber-400 text-zinc-950 px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold transition-colors"
+            >
+              Build Your Vault →
+            </Link>
+          </div>
         </div>
       </section>
 
